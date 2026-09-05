@@ -346,14 +346,14 @@ QSpinBox:focus, QDoubleSpinBox:focus, QLineEdit:focus {
 }
 
 /* Hervorhebung modifizierter Werte (Gold-Gelb) */
-QSpinBox[modified="true"], QDoubleSpinBox[modified="true"] {
+QSpinBox[modified="true"], QDoubleSpinBox[modified="true"], QComboBox[modified="true"] {
     color: #ffd700;
     border: 1px solid #856721;
     background-color: #1f1b14;
     font-weight: bold;
 }
 
-QSpinBox[modified="true"]:focus, QDoubleSpinBox[modified="true"]:focus {
+QSpinBox[modified="true"]:focus, QDoubleSpinBox[modified="true"]:focus, QComboBox[modified="true"]:focus {
     border: 1px solid #dfb23b;
     background-color: #272218;
     color: #ffffff;

@@ -1,11 +1,11 @@
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Callable
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
     QListWidget, QListWidgetItem, QFrame, QSplitter,
     QCheckBox, QComboBox, QPlainTextEdit, QScrollArea,
     QSizePolicy, QTableWidget, QTableWidgetItem, QHeaderView,
-    QSpinBox, QGridLayout, QGroupBox
+    QSpinBox, QGridLayout, QGroupBox, QTabWidget
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor
@@ -22,9 +22,33 @@ class SandboxTab(QWidget):
         self.system_engine = system_engine
         self.sandbox_engine = sandbox_engine
         self.current_map_data: Optional[Dict[str, Any]] = None
+        self._revert_updaters: List[Callable[[], None]] = []
 
         self._init_ui()
         self.refresh_maps()
+
+    def _create_combo_revert_btn(self, combo: QComboBox, default_idx: int = 0) -> QPushButton:
+        btn = QPushButton("↺")
+        btn.setObjectName("RevertBtn")
+        btn.setFixedSize(28, 24)
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn.setToolTip(t("config_tab.tt_revert_btn").format(val_str=combo.itemText(default_idx)))
+
+        def update_state():
+            is_mod = (combo.currentIndex() != default_idx)
+            mod_str = "true" if is_mod else "false"
+            btn.setProperty("modified", mod_str)
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+            combo.setProperty("modified", mod_str)
+            combo.style().unpolish(combo)
+            combo.style().polish(combo)
+
+        combo.currentIndexChanged.connect(lambda *_: update_state())
+        btn.clicked.connect(lambda *_: combo.setCurrentIndex(default_idx))
+        self._revert_updaters.append(update_state)
+        update_state()
+        return btn
 
     def _init_ui(self):
         main_layout = QVBoxLayout(self)
@@ -40,7 +64,7 @@ class SandboxTab(QWidget):
         left_layout = QVBoxLayout(left_card)
         left_layout.setContentsMargins(12, 12, 12, 12)
 
-        lbl_list_title = QLabel("🧪 Supported Test Maps")
+        lbl_list_title = QLabel(t("sandbox_tab.title_supported_maps"))
         lbl_list_title.setObjectName("SectionHeader")
         left_layout.addWidget(lbl_list_title)
 
@@ -76,7 +100,7 @@ class SandboxTab(QWidget):
         l_map.addWidget(lbl_target_title)
 
         h_pick = QHBoxLayout()
-        self.lbl_current_map = QLabel("<b>[Keine Map ausgewählt]</b>")
+        self.lbl_current_map = QLabel(f"<b>{t('sandbox_tab.no_map_selected')}</b>")
         h_pick.addWidget(self.lbl_current_map, 1)
 
         btn_refresh = QPushButton(t("sandbox_tab.btn_refresh"))
@@ -103,7 +127,6 @@ class SandboxTab(QWidget):
         h_preset.addWidget(self.combo_preset, 1)
         l_opts.addLayout(h_preset)
 
-        from PyQt6.QtWidgets import QTabWidget
         self.sub_tabs = QTabWidget()
         self.sub_tabs.setObjectName("SubTabWidget")
 
@@ -112,9 +135,15 @@ class SandboxTab(QWidget):
         tab_build_layout = QVBoxLayout(tab_build)
         grp_build = QGroupBox(t("sandbox_tab.grp_buildings"))
         grid_build = QGridLayout(grp_build)
+        grid_build.setHorizontalSpacing(10)
+        grid_build.setVerticalSpacing(8)
+        for col in range(6):
+            grid_build.setColumnStretch(col, 0)
+        grid_build.setColumnStretch(6, 1)
         
         self.combo_player = QComboBox()
-        self.combo_player.addItem("Map Default (No Overwrite)", 1)
+        self.combo_player.setFixedWidth(190)
+        self.combo_player.addItem(t("sandbox_tab.player_default"), None)
         self.combo_player.addItem("Marcus", "Marcus")
         self.combo_player.addItem("Alandra", "Alandra")
         self.combo_player.addItem("Kestral", "Kestral")
@@ -123,39 +152,49 @@ class SandboxTab(QWidget):
         self.combo_player.addItem("Elias", "Elias")
 
         self.combo_title = QComboBox()
+        self.combo_title.setFixedWidth(190)
         for i, text in enumerate([t("sandbox_tab.title_knight"), t("sandbox_tab.title_sheriff"), 
                                   t("sandbox_tab.title_baron"), t("sandbox_tab.title_earl"), 
                                   t("sandbox_tab.title_marquis"), t("sandbox_tab.title_duke")], 1):
             self.combo_title.addItem(text, i)
         
+        self.combo_church = QComboBox()
         self.combo_storehouse = QComboBox()
         self.combo_castle = QComboBox()
-        self.combo_church = QComboBox()
-        for cb in [self.combo_storehouse, self.combo_castle, self.combo_church]:
+        for cb in [self.combo_church, self.combo_storehouse, self.combo_castle]:
+            cb.setFixedWidth(115)
             for i, text in enumerate([t("sandbox_tab.level_1"), t("sandbox_tab.level_2"), 
                                       t("sandbox_tab.level_3"), t("sandbox_tab.level_4")], 1):
                 cb.addItem(text, i)
         
-        # Col 1
-        grid_build.addWidget(QLabel("Overwrite Player Knight:"), 0, 0)
+        # Col 1: Player & Title
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_overwrite_knight")), 0, 0)
         grid_build.addWidget(self.combo_player, 0, 1)
+        grid_build.addWidget(self._create_combo_revert_btn(self.combo_player, 0), 0, 2)
+
         grid_build.addWidget(QLabel(t("sandbox_tab.lbl_title")), 1, 0)
         grid_build.addWidget(self.combo_title, 1, 1)
+        grid_build.addWidget(self._create_combo_revert_btn(self.combo_title, 0), 1, 2)
 
-        # Col 2
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_church")), 0, 2)
-        grid_build.addWidget(self.combo_church, 0, 3)
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_storehouse")), 1, 2)
-        grid_build.addWidget(self.combo_storehouse, 1, 3)
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_castle")), 2, 2)
-        grid_build.addWidget(self.combo_castle, 2, 3)
+        # Col 2: Church, Storehouse, Castle (matching tab_config order)
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_church")), 0, 3)
+        grid_build.addWidget(self.combo_church, 0, 4)
+        grid_build.addWidget(self._create_combo_revert_btn(self.combo_church, 0), 0, 5)
+
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_storehouse")), 1, 3)
+        grid_build.addWidget(self.combo_storehouse, 1, 4)
+        grid_build.addWidget(self._create_combo_revert_btn(self.combo_storehouse, 0), 1, 5)
+
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_castle")), 2, 3)
+        grid_build.addWidget(self.combo_castle, 2, 4)
+        grid_build.addWidget(self._create_combo_revert_btn(self.combo_castle, 0), 2, 5)
         
-        for cb in [self.combo_player, self.combo_title, self.combo_castle, self.combo_storehouse, self.combo_church]:
+        for cb in [self.combo_player, self.combo_title, self.combo_church, self.combo_storehouse, self.combo_castle]:
             cb.currentIndexChanged.connect(self._update_lua_preview)
             
         tab_build_layout.addWidget(grp_build)
         tab_build_layout.addStretch()
-        self.sub_tabs.addTab(tab_build, "Titel & Gebäude")
+        self.sub_tabs.addTab(tab_build, t("sandbox_tab.tab_title_buildings"))
 
         # TAB 2: Resources
         tab_res = QWidget()
@@ -163,7 +202,12 @@ class SandboxTab(QWidget):
         grp_res = QGroupBox(t("sandbox_tab.grp_resources"))
         v_res = QVBoxLayout(grp_res)
         self.table_res = QTableWidget(0, 4)
-        self._setup_table(self.table_res, [t("sandbox_tab.col_res_name"), t("sandbox_tab.col_res_start"), t("sandbox_tab.col_res_vanilla"), ""])
+        self._setup_table(self.table_res, [
+            t("sandbox_tab.col_res_name"), 
+            t("sandbox_tab.col_res_start"), 
+            t("sandbox_tab.col_res_vanilla"), 
+            t("config_tab.lbl_reset")
+        ])
         self.res_spinboxes = {}
         self._add_res_row("G_Gold", t("sandbox_tab.res_gold"), 0)
         self._add_res_row("G_Wood", t("sandbox_tab.res_wood"), 0)
@@ -175,7 +219,7 @@ class SandboxTab(QWidget):
         self._add_res_row("G_Herb", t("sandbox_tab.res_medicine"), 0)
         v_res.addWidget(self.table_res)
         tab_res_layout.addWidget(grp_res)
-        self.sub_tabs.addTab(tab_res, "Start-Rohstoffe")
+        self.sub_tabs.addTab(tab_res, t("sandbox_tab.tab_start_resources"))
 
         # TAB 3: Troops
         tab_troops = QWidget()
@@ -183,7 +227,12 @@ class SandboxTab(QWidget):
         grp_troops = QGroupBox(t("sandbox_tab.grp_troops"))
         v_troops = QVBoxLayout(grp_troops)
         self.table_troops = QTableWidget(0, 4)
-        self._setup_table(self.table_troops, [t("sandbox_tab.col_res_name"), t("sandbox_tab.col_res_start"), t("sandbox_tab.col_res_vanilla"), ""])
+        self._setup_table(self.table_troops, [
+            t("sandbox_tab.col_troop_name"), 
+            t("sandbox_tab.col_res_start"), 
+            t("sandbox_tab.col_res_vanilla"), 
+            t("config_tab.lbl_reset")
+        ])
         self.troop_spinboxes = {}
         self._add_troop_row("U_MilitarySword", t("sandbox_tab.troop_sword"), 0)
         self._add_troop_row("U_MilitaryBow", t("sandbox_tab.troop_bow"), 0)
@@ -191,7 +240,7 @@ class SandboxTab(QWidget):
         self._add_troop_row("U_Thief", t("sandbox_tab.troop_thief"), 0)
         v_troops.addWidget(self.table_troops)
         tab_troops_layout.addWidget(grp_troops)
-        self.sub_tabs.addTab(tab_troops, "Start-Truppen")
+        self.sub_tabs.addTab(tab_troops, t("sandbox_tab.tab_start_troops"))
 
         l_opts.addWidget(self.sub_tabs)
 
@@ -213,7 +262,7 @@ class SandboxTab(QWidget):
         card_preview = QFrame()
         card_preview.setObjectName("CardFrame")
         l_prev = QVBoxLayout(card_preview)
-        lbl_prev_title = QLabel("Generated Lua Sandbox Code (executed at the end of mapscript.lua):")
+        lbl_prev_title = QLabel(t("sandbox_tab.lbl_preview"))
         lbl_prev_title.setStyleSheet("color: #94a3b8;")
         l_prev.addWidget(lbl_prev_title)
 
@@ -255,21 +304,30 @@ class SandboxTab(QWidget):
         table.verticalHeader().setVisible(False)
         table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         table.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
+        table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         table.setShowGrid(False)
         table.setAlternatingRowColors(True)
-        table.setStyleSheet("QTableWidget::item:hover { background-color: transparent; }")
+        table.setStyleSheet("""
+            QTableWidget {
+                border: 1px solid #2d3342;
+                border-radius: 6px;
+                background-color: #171922;
+            }
+            QTableWidget::item:hover { background-color: transparent; }
+            QTableWidget::item:selected { background-color: transparent; }
+        """)
         
         header = table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
-        table.setColumnWidth(1, 100)
+        table.setColumnWidth(1, 110)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        table.setColumnWidth(2, 60)
+        table.setColumnWidth(2, 75)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
-        table.setColumnWidth(3, 40)
+        table.setColumnWidth(3, 55)
         table.horizontalHeader().setMinimumSectionSize(30)
-        table.verticalHeader().setDefaultSectionSize(34)
-        table.setMinimumHeight(240)
+        table.verticalHeader().setDefaultSectionSize(36)
+        table.setMinimumHeight(260)
 
     def _add_res_row(self, res_id, name, vanilla_val):
         self._add_row_to_table(self.table_res, self.res_spinboxes, res_id, name, vanilla_val, max_val=999999)
@@ -281,49 +339,90 @@ class SandboxTab(QWidget):
         row = table.rowCount()
         table.insertRow(row)
         
+        # Col 0: Item Name
         item_name = QTableWidgetItem(name)
+        item_name.setTextAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         table.setItem(row, 0, item_name)
         
+        # Col 1: SpinBox
         sb = QSpinBox()
         sb.setRange(0, max_val)
         sb.setValue(vanilla_val)
+        sb.setAlignment(Qt.AlignmentFlag.AlignCenter)
         if max_val > 1000:
             sb.setSingleStep(50)
         sb.valueChanged.connect(self._update_lua_preview)
         sb_dict[item_id] = sb
-        table.setCellWidget(row, 1, sb)
         
-        item_van = QTableWidgetItem(str(vanilla_val))
-        item_van.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-        item_van.setForeground(QColor("#94a3b8"))
-        table.setItem(row, 2, item_van)
+        sb_wrap = QWidget()
+        sb_l = QHBoxLayout(sb_wrap)
+        sb_l.setContentsMargins(4, 2, 4, 2)
+        sb_l.addWidget(sb)
+        table.setCellWidget(row, 1, sb_wrap)
         
+        # Col 2: Vanilla Badge (matches Tab 1)
+        val_str = str(vanilla_val)
+        lbl_van = QLabel(val_str)
+        lbl_van.setObjectName("VanillaBadge")
+        lbl_van.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lbl_van.setToolTip(t("config_tab.tt_vanilla_badge").format(val_str=val_str))
+        lbl_van.setFixedWidth(64)
+        
+        van_wrap = QWidget()
+        van_l = QHBoxLayout(van_wrap)
+        van_l.setContentsMargins(4, 2, 4, 2)
+        van_l.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        van_l.addWidget(lbl_van)
+        table.setCellWidget(row, 2, van_wrap)
+        
+        # Col 3: Revert Button (matches Tab 1)
         btn_reset = QPushButton("↺")
-        btn_reset.setToolTip("Reset to Vanilla")
-        btn_reset.setFixedSize(24, 24)
-        btn_reset.setStyleSheet("background-color: transparent; border: 1px solid #465066; color: #cbd5e1; border-radius: 4px; font-weight: bold;")
-        btn_reset.clicked.connect(lambda _, s=sb, v=vanilla_val: s.setValue(v))
-        table.setCellWidget(row, 3, btn_reset)
+        btn_reset.setObjectName("RevertBtn")
+        btn_reset.setToolTip(t("config_tab.tt_revert_btn").format(val_str=val_str))
+        btn_reset.setFixedSize(28, 24)
+        btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        def update_revert_state():
+            is_mod = (sb.value() != vanilla_val)
+            mod_str = "true" if is_mod else "false"
+            btn_reset.setProperty("modified", mod_str)
+            btn_reset.style().unpolish(btn_reset)
+            btn_reset.style().polish(btn_reset)
+            sb.setProperty("modified", mod_str)
+            sb.style().unpolish(sb)
+            sb.style().polish(sb)
+
+        sb.valueChanged.connect(lambda *_: update_revert_state())
+        btn_reset.clicked.connect(lambda *_: sb.setValue(vanilla_val))
+        self._revert_updaters.append(update_revert_state)
+        update_revert_state()
+
+        btn_wrap = QWidget()
+        btn_l = QHBoxLayout(btn_wrap)
+        btn_l.setContentsMargins(0, 0, 0, 0)
+        btn_l.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        btn_l.addWidget(btn_reset)
+        table.setCellWidget(row, 3, btn_wrap)
 
     def _on_preset_changed(self, index: int):
         preset_id = self.combo_preset.currentData()
         self._apply_preset(preset_id)
 
     def _apply_preset(self, preset_id: str):
-        # Block signals to avoid multiple updates
-        for cb in [self.combo_title, self.combo_castle, self.combo_storehouse, self.combo_church]:
+        # Block signals to avoid cascading previews
+        for cb in [self.combo_player, self.combo_title, self.combo_church, self.combo_storehouse, self.combo_castle]:
             cb.blockSignals(True)
         for sb in list(self.res_spinboxes.values()) + list(self.troop_spinboxes.values()):
             sb.blockSignals(True)
         self.chk_fog.blockSignals(True)
         self.chk_vic.blockSignals(True)
 
-        # Reset alle
+        # Reset all
         self.combo_player.setCurrentIndex(0)
         self.combo_title.setCurrentIndex(0)
-        self.combo_castle.setCurrentIndex(0)
-        self.combo_storehouse.setCurrentIndex(0)
         self.combo_church.setCurrentIndex(0)
+        self.combo_storehouse.setCurrentIndex(0)
+        self.combo_castle.setCurrentIndex(0)
         for sb in list(self.res_spinboxes.values()) + list(self.troop_spinboxes.values()):
             sb.setValue(0)
         self.chk_fog.setChecked(False)
@@ -339,9 +438,9 @@ class SandboxTab(QWidget):
             self.troop_spinboxes["U_MilitarySword"].setValue(2)
         elif preset_id == "high":
             self.combo_title.setCurrentIndex(5) # Herzog
-            self.combo_castle.setCurrentIndex(3) # Lvl 4
-            self.combo_storehouse.setCurrentIndex(3)
             self.combo_church.setCurrentIndex(3)
+            self.combo_storehouse.setCurrentIndex(3)
+            self.combo_castle.setCurrentIndex(3) # Lvl 4
             self.res_spinboxes["G_Gold"].setValue(50000)
             for r in ["G_Wood", "G_Stone", "G_Iron", "G_Grain", "G_Wool", "G_Honeycomb", "G_Herb"]:
                 self.res_spinboxes[r].setValue(500)
@@ -350,12 +449,16 @@ class SandboxTab(QWidget):
             self.troop_spinboxes["U_CatapultCart"].setValue(2)
             self.chk_fog.setChecked(True)
 
-        for cb in [self.combo_title, self.combo_castle, self.combo_storehouse, self.combo_church]:
+        for cb in [self.combo_player, self.combo_title, self.combo_church, self.combo_storehouse, self.combo_castle]:
             cb.blockSignals(False)
         for sb in list(self.res_spinboxes.values()) + list(self.troop_spinboxes.values()):
             sb.blockSignals(False)
         self.chk_fog.blockSignals(False)
         self.chk_vic.blockSignals(False)
+
+        # Refresh all revert visual states
+        for fn in self._revert_updaters:
+            fn()
         
         self._update_lua_preview()
 
@@ -370,12 +473,12 @@ class SandboxTab(QWidget):
             self.list_maps.addItem(item)
         if self.list_maps.count() > 0:
             self.list_maps.setCurrentRow(0)
-        self.status_message.emit("info", "Test Map Listen aktualisiert.")
+        self.status_message.emit("info", t("sandbox_tab.log_maps_refreshed"))
 
     def _on_map_selection_changed(self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]):
         if not current:
             self.current_map_data = None
-            self.lbl_current_map.setText("<b>[Keine Map ausgewählt]</b>")
+            self.lbl_current_map.setText(f"<b>{t('sandbox_tab.no_map_selected')}</b>")
             self.lbl_inject_status.setText("")
             self.btn_inject.setEnabled(False)
             self.btn_remove.setEnabled(False)
@@ -390,7 +493,7 @@ class SandboxTab(QWidget):
             self.lbl_inject_status.setObjectName("BadgeWarning")
             self.btn_remove.setEnabled(True)
         else:
-            self.lbl_inject_status.setText("🟢 STANDARD: Clean Original Script (No Injection)")
+            self.lbl_inject_status.setText(t("sandbox_tab.status_clean"))
             self.lbl_inject_status.setObjectName("BadgeSuccess")
             self.btn_remove.setEnabled(False)
 
@@ -402,9 +505,9 @@ class SandboxTab(QWidget):
         options = {
             "overwrite_knight": self.combo_player.currentData(),
             "title_level": self.combo_title.currentData() or (self.combo_title.currentIndex() + 1),
-            "b_castle": self.combo_castle.currentIndex() + 1,
-            "b_storehouse": self.combo_storehouse.currentIndex() + 1,
             "b_church": self.combo_church.currentIndex() + 1,
+            "b_storehouse": self.combo_storehouse.currentIndex() + 1,
+            "b_castle": self.combo_castle.currentIndex() + 1,
             "reveal_fog": self.chk_fog.isChecked(),
             "instant_victory": self.chk_vic.isChecked(),
             "resources": {k: sb.value() for k, sb in self.res_spinboxes.items() if sb.value() > 0},
@@ -422,10 +525,10 @@ class SandboxTab(QWidget):
         script_path = self.current_map_data["script_path"]
         try:
             self.sandbox_engine.inject_sandbox_into_script(script_path, self._build_options_dict())
-            self.status_message.emit("success", f"Sandbox-Code erfolgreich in {os.path.basename(script_path)} injiziert.")
+            self.status_message.emit("success", t("sandbox_tab.log_inject_success").format(name=os.path.basename(script_path)))
             self._update_map_item_status(True)
         except Exception as e:
-            self.status_message.emit("error", f"Fehler bei Injection: {e}")
+            self.status_message.emit("error", t("sandbox_tab.log_inject_error").format(err=str(e)))
 
     def _on_remove(self):
         if not self.current_map_data:
@@ -434,12 +537,12 @@ class SandboxTab(QWidget):
         try:
             removed = self.sandbox_engine.remove_sandbox_from_script(script_path)
             if removed:
-                self.status_message.emit("success", f"Sandbox-Code aus {os.path.basename(script_path)} entfernt.")
+                self.status_message.emit("success", t("sandbox_tab.log_remove_success").format(name=os.path.basename(script_path)))
             else:
-                self.status_message.emit("info", "Kein Sandbox-Code gefunden.")
+                self.status_message.emit("info", t("sandbox_tab.log_no_sandbox_found"))
             self._update_map_item_status(False)
         except Exception as e:
-            self.status_message.emit("error", f"Fehler beim Entfernen: {e}")
+            self.status_message.emit("error", t("sandbox_tab.log_remove_error").format(err=str(e)))
 
     def _update_map_item_status(self, is_injected: bool):
         self.current_map_data["is_injected"] = is_injected

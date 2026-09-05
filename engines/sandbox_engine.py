@@ -91,6 +91,7 @@ class SandboxEngine:
 
     def generate_lua_sandbox_code(self, options: Dict[str, Any]) -> str:
         """Erzeugt den gekapselten Lua-Sandbox-Codeblock basierend auf Startbedingungen."""
+        overwrite_knight = options.get("overwrite_knight", 1)
         title_level = options.get("title_level", 1) # 1=Ritter, ..., 6=Herzog
         b_castle = options.get("b_castle", 1)
         b_storehouse = options.get("b_storehouse", 1)
@@ -120,6 +121,19 @@ class SandboxEngine:
             "        local hq = Logic.GetHeadquarters(humanPlayerID)",
             ""
         ]
+
+        # 0. Ritter überschreiben
+        if overwrite_knight != 1:
+            lines.extend([
+                "        -- 0. Ritter ersetzen",
+                "        local knight = Logic.GetKnightID(humanPlayerID)",
+                "        if knight > 0 then",
+                "            local px, py = Logic.GetEntityPosition(knight)",
+                "            Logic.DestroyEntity(knight)",
+                f"            Logic.CreateEntity(Entities.U_Knight{overwrite_knight}, px, py, 0, humanPlayerID)",
+                "        end",
+                ""
+            ])
 
         # 1. Titel
         if title_level > 1:
