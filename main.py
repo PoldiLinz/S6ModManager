@@ -32,13 +32,22 @@ def main():
     app.setApplicationName("Siedler 6 Mod & Map Manager")
     app.setOrganizationName("Siedler 6 Modding Community")
 
+    from PyQt6.QtGui import QIcon
+
     # QSS Stylesheet laden
     theme_path = os.path.join(current_dir, "styles", "theme.qss")
     if os.path.exists(theme_path):
         with open(theme_path, "r", encoding="utf-8") as f:
             app.setStyleSheet(f.read())
 
+    # Icon laden
+    icon_path = os.path.join(current_dir, "assets", "icon.ico")
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))
+
     window = MainWindow()
+    if os.path.exists(icon_path):
+        window.setWindowIcon(QIcon(icon_path))
     window.show()
 
     sys.exit(app.exec())
