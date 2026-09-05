@@ -65,6 +65,14 @@ class ScenarioEngine:
         if not os.path.exists(map_dir):
             return variations
 
+        # Einen Fallback für die Vorschau suchen (falls z.B. Vanilla kein eigenes Bild hat,
+        # aber ein Mod-Ordner ein mappreview.png mitliefert).
+        fallback_preview = None
+        for root, dirs, files in os.walk(map_dir):
+            if "mappreview.png" in files:
+                fallback_preview = os.path.join(root, "mappreview.png")
+                break
+
         for var_id in os.listdir(map_dir):
             var_dir = os.path.join(map_dir, var_id)
             if not os.path.isdir(var_dir):
@@ -78,7 +86,7 @@ class ScenarioEngine:
                 if os.path.exists(preview_sub):
                     preview_path = preview_sub
                 else:
-                    preview_path = None
+                    preview_path = fallback_preview
 
             if os.path.exists(json_path):
                 try:
