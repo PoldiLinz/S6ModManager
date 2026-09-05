@@ -90,17 +90,19 @@ class SandboxEngine:
             return False
 
     def generate_lua_sandbox_code(self, options: Dict[str, Any]) -> str:
-        """Erzeugt den gekapselten Lua-Sandbox-Codeblock."""
-        upgrade_knight = options.get("upgrade_knight", True)
-        add_resources = options.get("add_resources", True)
-        fill_storehouse = options.get("fill_storehouse", True)
-        reveal_fog = options.get("reveal_fog", True)
-        gold_amount = options.get("gold_amount", 50000)
-        res_amount = options.get("resources_amount", 500)
+        """Erzeugt den gekapselten Lua-Sandbox-Codeblock basierend auf Startbedingungen."""
+        title_level = options.get("title_level", 1) # 1=Ritter, ..., 6=Herzog
+        b_castle = options.get("b_castle", 1)
+        b_storehouse = options.get("b_storehouse", 1)
+        b_church = options.get("b_church", 1)
+        resources = options.get("resources", {})
+        troops = options.get("troops", {})
+        reveal_fog = options.get("reveal_fog", False)
+        instant_victory = options.get("instant_victory", False)
 
         lines = [
             self.INJECTION_START_MARKER,
-            "-- Automatisch generierter Sandbox-Testcode für Siedler 6 High-Tier Testing",
+            "-- Automatisch generierter Sandbox-Testcode für Siedler 6",
             "if not _G.__S6_Sandbox_Injected then",
             "    _G.__S6_Sandbox_Injected = true",
             "",
@@ -115,69 +117,97 @@ class SandboxEngine:
             "            local pid = GUI.GetPlayerID()",
             "            if pid and pid > 0 then humanPlayerID = pid end",
             "        end",
+            "        local hq = Logic.GetHeadquarters(humanPlayerID)",
             ""
         ]
 
-        # 1. Herzog-Titel
-        if upgrade_knight:
+        # 1. Titel
+        if title_level > 1:
             lines.extend([
-                "        -- 1. Ritter-Beförderung auf Herzog (Stufe 6)",
-                "        for i = 1, 6 do",
+                f"        -- 1. Ritter-Beförderung auf Stufe {title_level}",
+                f"        for i = 1, {title_level - 1} do",
                 "            Logic.KnightUpgrade(humanPlayerID)",
                 "        end",
                 ""
             ])
 
-        # 2. Ressourcen
-        if add_resources:
-            lines.extend([
-                f"        -- 2. Start-Ressourcen ({gold_amount} Gold, {res_amount} Rohstoffe)",
-                f"        AddResourcesToPlayer(Goods.G_Gold, {gold_amount}, humanPlayerID)",
-                f"        AddResourcesToPlayer(Goods.G_Wood, {res_amount}, humanPlayerID)",
-                f"        AddResourcesToPlayer(Goods.G_Stone, {res_amount}, humanPlayerID)",
-                f"        AddResourcesToPlayer(Goods.G_Iron, {res_amount}, humanPlayerID)",
-                f"        AddResourcesToPlayer(Goods.G_Grain, {res_amount}, humanPlayerID)",
-                f"        AddResourcesToPlayer(Goods.G_Milk, {res_amount}, humanPlayerID)",
-                f"        AddResourcesToPlayer(Goods.G_Wool, {res_amount}, humanPlayerID)",
-                f"        AddResourcesToPlayer(Goods.G_Honeycomb, {res_amount}, humanPlayerID)",
-                f"        AddResourcesToPlayer(Goods.G_Carcass, {res_amount}, humanPlayerID)",
-                f"        AddResourcesToPlayer(Goods.G_RawFish, {res_amount}, humanPlayerID)",
-                f"        AddResourcesToPlayer(Goods.G_Herb, {res_amount}, humanPlayerID)",
-                ""
-            ])
+        # 2. Rohstoffe
+        if resources:
+            lines.append("        -- 2. Start-Rohstoffe (In Burg/Lagerhaus einlagern)")
+            for good, amount in resources.items():
+                if amount > 0:
+                    lines.append(f"        if hq > 0 then Logic.AddGoodToStock(hq, Goods.{good}, {amount}, true, true) end")
+            lines.append("")
 
-        # 3. Lagerhaus befüllen
-        if fill_storehouse:
+        # 3. Truppen
+        if troops:
+            lines.append("        -- 3. Start-Truppen")
             lines.extend([
-                "        -- 3. Start-Lagerhäuser befüllen",
-                "        local buildings = { Logic.GetBuildingsByPlayer(humanPlayerID) }",
-                "        for i = 1, #buildings do",
-                "            local bId = buildings[i]",
-                "            if Logic.IsBuilding(bId) == 1 then",
-                f"                Logic.AddGoodToStock(bId, Goods.G_Wood, {res_amount}, true, true)",
-                f"                Logic.AddGoodToStock(bId, Goods.G_Stone, {res_amount}, true, true)",
-                f"                Logic.AddGoodToStock(bId, Goods.G_Iron, {res_amount}, true, true)",
-                "            end",
-                "        end",
-                ""
+                "        local px, py = 0, 0",
+                "        if hq > 0 then px, py = Logic.GetEntityPosition(hq) end",
             ])
+            for ent_type, amount in troops.items():
+                if amount > 0:
+                    lines.extend([
+                        f"        for i = 1, {amount} do",
+                        f"            Logic.CreateEntity(Entities.{ent_type}, px+400, py+400, 0, humanPlayerID)",
+                        "        end"
+                    ])
+            lines.append("")
 
         # 4. Fog of War Reveal
         if reveal_fog:
             lines.extend([
-                "        -- 4. Nebel des Krieges aufdecken (Fog of War Reveal)",
+                "        -- 4. Nebel des Krieges aufdecken",
                 "        Logic.SetExplorationStatus(-1)",
                 "        Logic.ExecuteInLuaLocalState('Display.SetRenderFogOfWar(-1)')",
                 "        Logic.ExecuteInLuaLocalState('GUI.MiniMap_SetRenderFogOfWar(-1)')",
                 ""
             ])
 
-        # 5. InGame Feedback Note
+        # 5. Instant Victory
+        if instant_victory:
+            lines.extend([
+                "        -- 5. Sofortiger Sieg",
+                "        Logic.ExecuteInLuaLocalState('GUI.AddNote(\\'Instant Victory Cheat aktiviert.\\')')",
+                "        Logic.PlayerSetGameStateToWon(humanPlayerID)",
+                ""
+            ])
+
+        # 6. Gebäude-Upgrades
+        if b_castle > 1 or b_storehouse > 1 or b_church > 1:
+            lines.extend([
+                "        -- 6. Gebäude-Upgrades (Verzögert auf Sekunde 2, damit Gebäude existieren)",
+                "        Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, nil, 'Sandbox_UpgradeBuildings_Job', 1, nil, {",
+                f"            c={b_castle}, s={b_storehouse}, ch={b_church}, p=humanPlayerID",
+                "        })",
+                ""
+            ])
+
         lines.extend([
             "        -- InGame Feedback anzeigen",
             "        if GUI and GUI.AddNote then",
-            '            GUI.AddNote("🧪 SANDBOX-MODUS AKTIV: Herzog-Titel, 50.000 Gold & Rohstoffe bereitgestellt!")',
+            '            GUI.AddNote("🧪 SANDBOX-MODUS AKTIV: Startbedingungen wurden injiziert!")',
             "        end",
+            "    end",
+            "",
+            "    function Sandbox_UpgradeBuildings_Job(data)",
+            "        local hq = Logic.GetHeadquarters(data.p)",
+            "        local store = Logic.GetStoreHouse(data.p)",
+            "        local church = 0",
+            "        local buildings = {Logic.GetPlayerEntitiesInCategory(data.p, EntityCategories.Church)}",
+            "        if #buildings > 0 then church = buildings[1] end",
+            "",
+            "        if data.c > 1 and hq > 0 then",
+            "            for i=1, data.c-1 do Logic.UpgradeBuilding(hq) end",
+            "        end",
+            "        if data.s > 1 and store > 0 then",
+            "            for i=1, data.s-1 do Logic.UpgradeBuilding(store) end",
+            "        end",
+            "        if data.ch > 1 and church > 0 then",
+            "            for i=1, data.ch-1 do Logic.UpgradeBuilding(church) end",
+            "        end",
+            "        return true -- Trigger beenden",
             "    end",
             "end",
             self.INJECTION_END_MARKER,
