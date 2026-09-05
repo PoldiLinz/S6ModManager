@@ -14,13 +14,13 @@ from ModManager.engines.i18n_engine import t
 from ModManager.engines.sandbox_engine import SandboxEngine
 from ModManager.engines.system_engine import SystemEngine
 
-class TabSandbox(QWidget):
-    log_signal = pyqtSignal(str, str)
+class SandboxTab(QWidget):
+    status_message = pyqtSignal(str, str)
 
-    def __init__(self, system_engine: SystemEngine):
+    def __init__(self, sandbox_engine: SandboxEngine, system_engine: SystemEngine):
         super().__init__()
         self.system_engine = system_engine
-        self.sandbox_engine = SandboxEngine(self.system_engine)
+        self.sandbox_engine = sandbox_engine
         self.current_map_data: Optional[Dict[str, Any]] = None
 
         self._init_ui()
@@ -334,7 +334,7 @@ class TabSandbox(QWidget):
 
     def refresh_maps(self):
         self.list_maps.clear()
-        maps = self.sandbox_engine.list_all_testable_maps()
+        maps = self.sandbox_engine.list_testable_maps()
         for m in maps:
             item = QListWidgetItem(m["name"])
             item.setData(Qt.ItemDataRole.UserRole, m)
@@ -343,7 +343,7 @@ class TabSandbox(QWidget):
             self.list_maps.addItem(item)
         if self.list_maps.count() > 0:
             self.list_maps.setCurrentRow(0)
-        self.log_signal.emit("info", "Test Map Listen aktualisiert.")
+        self.status_message.emit("info", "Test Map Listen aktualisiert.")
 
     def _on_map_selection_changed(self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]):
         if not current:
@@ -394,10 +394,10 @@ class TabSandbox(QWidget):
         script_path = self.current_map_data["script_path"]
         try:
             self.sandbox_engine.inject_sandbox_into_script(script_path, self._build_options_dict())
-            self.log_signal.emit("success", f"Sandbox-Code erfolgreich in {os.path.basename(script_path)} injiziert.")
+            self.status_message.emit("success", f"Sandbox-Code erfolgreich in {os.path.basename(script_path)} injiziert.")
             self._update_map_item_status(True)
         except Exception as e:
-            self.log_signal.emit("error", f"Fehler bei Injection: {e}")
+            self.status_message.emit("error", f"Fehler bei Injection: {e}")
 
     def _on_remove(self):
         if not self.current_map_data:
@@ -406,12 +406,12 @@ class TabSandbox(QWidget):
         try:
             removed = self.sandbox_engine.remove_sandbox_from_script(script_path)
             if removed:
-                self.log_signal.emit("success", f"Sandbox-Code aus {os.path.basename(script_path)} entfernt.")
+                self.status_message.emit("success", f"Sandbox-Code aus {os.path.basename(script_path)} entfernt.")
             else:
-                self.log_signal.emit("info", "Kein Sandbox-Code gefunden.")
+                self.status_message.emit("info", "Kein Sandbox-Code gefunden.")
             self._update_map_item_status(False)
         except Exception as e:
-            self.log_signal.emit("error", f"Fehler beim Entfernen: {e}")
+            self.status_message.emit("error", f"Fehler beim Entfernen: {e}")
 
     def _update_map_item_status(self, is_injected: bool):
         self.current_map_data["is_injected"] = is_injected
