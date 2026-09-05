@@ -46,6 +46,8 @@ class SystemEngine:
         self.backups_path = os.path.join(self.workspace_path, "Backups")
 
         self.language = "en"
+        self.window_width = 1120
+        self.window_height = 820
         self.load_settings()
 
         os.makedirs(self.backups_path, exist_ok=True)
@@ -72,6 +74,10 @@ class SystemEngine:
                         self.presets_path = os.path.normpath(data["presets_path"])
                     if "language" in data and data["language"]:
                         self.language = data["language"]
+                    if "window_width" in data:
+                        self.window_width = data["window_width"]
+                    if "window_height" in data:
+                        self.window_height = data["window_height"]
             except Exception:
                 pass
         I18nEngine.get_instance().set_language(self.language)

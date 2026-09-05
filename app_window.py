@@ -9,9 +9,10 @@ from datetime import datetime
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QTabWidget, QFrame, QPlainTextEdit, QStatusBar, QPushButton,
-    QMessageBox, QInputDialog
+    QMessageBox, QInputDialog, QSizePolicy
 )
 from PyQt6.QtCore import Qt, pyqtSlot, QProcess
+from PyQt6.QtGui import QCloseEvent
 
 from ModManager.engines.system_engine import SystemEngine
 from ModManager.engines.config_engine import ConfigEngine
@@ -39,7 +40,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(t("app.title"))
         self.setMinimumSize(1024, 720)
-        self.resize(1120, 780)
+        self.resize(self.system_engine.window_width, self.system_engine.window_height)
 
         self._tab_loaded = {}  # Tracking: welche Tabs wurden bereits geladen?
         self._init_ui()
@@ -107,6 +108,7 @@ class MainWindow(QMainWindow):
 
         # 3. Log-Konsole & Statuszeile am unteren Rand
         log_frame = QFrame()
+        log_frame.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         log_frame.setContentsMargins(10, 5, 10, 8)
         v_log = QVBoxLayout(log_frame)
         v_log.setContentsMargins(0, 0, 0, 0)
@@ -117,7 +119,6 @@ class MainWindow(QMainWindow):
         h_log_header.addStretch()
 
         btn_clear_log = QPushButton(t("app.clear_log"))
-        btn_clear_log.setMaximumHeight(22)
         btn_clear_log.clicked.connect(lambda: self.log_console.clear())
         h_log_header.addWidget(btn_clear_log)
         v_log.addLayout(h_log_header)
@@ -125,6 +126,7 @@ class MainWindow(QMainWindow):
         self.log_console = QPlainTextEdit()
         self.log_console.setObjectName("LogConsole")
         self.log_console.setReadOnly(True)
+        self.log_console.setMinimumHeight(80)
         self.log_console.setMaximumHeight(90)
         v_log.addWidget(self.log_console)
 
@@ -249,3 +251,14 @@ class MainWindow(QMainWindow):
             t("dialogs.about_title"),
             t("dialogs.about_text")
         )
+
+    def closeEvent(self, event: QCloseEvent):
+        """Wird aufgerufen, wenn das Fenster geschlossen wird."""
+        try:
+            self.system_engine.save_settings({
+                "window_width": self.width(),
+                "window_height": self.height()
+            })
+        except Exception as e:
+            print(f"Failed to save window geometry: {e}")
+        event.accept()
