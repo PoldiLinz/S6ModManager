@@ -16,41 +16,70 @@ parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import Qt
-from ModManager.app_window import MainWindow
+import traceback
+import logging
+
+# Logdatei im UserMods-Verzeichnis
+log_file = os.path.join(parent_dir, "mod_manager.log")
+logging.basicConfig(
+    filename=log_file,
+    level=logging.INFO,
+    format="[%(asctime)s] [%(levelname)s] %(message)s",
+    encoding="utf-8"
+)
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    err_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    logging.critical("Unbehandelte Ausnahme:\n" + err_msg)
+    print("\n[KRITISCHER FEHLER]\n" + err_msg, file=sys.stderr)
+    try:
+        from PyQt6.QtWidgets import QMessageBox
+        QMessageBox.critical(None, "Mod Manager Fehler", f"Ein unerwarteter Fehler ist aufgetreten:\n\n{exc_value}\n\nDetails in mod_manager.log.")
+    except Exception:
+        pass
+
+sys.excepthook = handle_exception
 
 
 def main():
-    # Windows High DPI Policy
-    if hasattr(Qt.HighDpiScaleFactorRoundingPolicy, 'PassThrough'):
-        QApplication.setHighDpiScaleFactorRoundingPolicy(
-            Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
-        )
+    logging.info("Starte Siedler 6 Mod & Map Manager...")
+    try:
+        # Windows High DPI Policy
+        if hasattr(Qt.HighDpiScaleFactorRoundingPolicy, 'PassThrough'):
+            QApplication.setHighDpiScaleFactorRoundingPolicy(
+                Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+            )
 
-    app = QApplication(sys.argv)
-    app.setApplicationName("Siedler 6 Mod & Map Manager")
-    app.setOrganizationName("Siedler 6 Modding Community")
+        app = QApplication(sys.argv)
+        app.setApplicationName("Siedler 6 Mod & Map Manager")
+        app.setOrganizationName("Siedler 6 Modding Community")
 
-    from PyQt6.QtGui import QIcon
+        from PyQt6.QtGui import QIcon
 
-    # QSS Stylesheet laden
-    theme_path = os.path.join(current_dir, "styles", "theme.qss")
-    if os.path.exists(theme_path):
-        with open(theme_path, "r", encoding="utf-8") as f:
-            app.setStyleSheet(f.read())
+        # QSS Stylesheet laden
+        theme_path = os.path.join(current_dir, "styles", "theme.qss")
+        if os.path.exists(theme_path):
+            with open(theme_path, "r", encoding="utf-8") as f:
+                app.setStyleSheet(f.read())
 
-    # Icon laden
-    icon_path = os.path.join(current_dir, "assets", "icon.ico")
-    if os.path.exists(icon_path):
-        app.setWindowIcon(QIcon(icon_path))
+        # Icon laden
+        icon_path = os.path.join(current_dir, "assets", "icon.ico")
+        if os.path.exists(icon_path):
+            app.setWindowIcon(QIcon(icon_path))
 
-    window = MainWindow()
-    if os.path.exists(icon_path):
-        window.setWindowIcon(QIcon(icon_path))
-    window.show()
+        window = MainWindow()
+        if os.path.exists(icon_path):
+            window.setWindowIcon(QIcon(icon_path))
+        window.show()
 
-    sys.exit(app.exec())
+        logging.info("Hauptfenster erfolgreich geöffnet. Starte Event-Loop.")
+        sys.exit(app.exec())
+    except Exception as e:
+        logging.exception(f"Fehler in main(): {e}")
+        raise
 
 
 if __name__ == "__main__":

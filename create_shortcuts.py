@@ -40,7 +40,8 @@ if (Test-Path $desktop) {{
     res = subprocess.run(
         ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps_cmd],
         capture_output=True,
-        text=True,
+        encoding="utf-8",
+        errors="ignore",
     )
     print(res.stdout)
     if res.stderr:
