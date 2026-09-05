@@ -151,6 +151,22 @@ QLabel#BadgeError {
     font-size: 11px;
 }
 
+QLabel#GlobalStatusOK {
+    background-color: transparent;
+    color: #4ade80;
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+QLabel#GlobalStatusError {
+    background-color: transparent;
+    color: #f87171;
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
 /* Haupt-Registerkarten (QTabWidget) */
 QTabWidget::pane {
     border: 1px solid #333a4a;

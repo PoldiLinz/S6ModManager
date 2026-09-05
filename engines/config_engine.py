@@ -60,7 +60,17 @@ class ConfigEngine:
                         })
                 except Exception:
                     pass
-        return presets
+        def sort_key(p):
+            name = p["name"].lower()
+            if "vanilla" in name:
+                return (0, name)
+            elif "ausgewogen" in name:
+                return (1, name)
+            elif "extreme" in name:
+                return (2, name)
+            return (3, name)
+
+        return sorted(presets, key=sort_key)
 
     def _read_xml_from_modloader(self, rel_path: str) -> Optional[ET.Element]:
         """Liest eine XML-Datei aus dem aktiven ModLoader-Ordner, falls vorhanden."""

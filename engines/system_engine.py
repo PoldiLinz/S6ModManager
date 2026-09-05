@@ -22,9 +22,9 @@ class SystemEngine:
         os.path.normpath("config/entities/u_knightredprince.xml"),
         os.path.normpath("config/entities/u_knightsabatta.xml"),
         os.path.normpath("config/entities/b_npc_barracks_me.xml"),
-        os.path.normpath("config/sound/playlistevents.xml"),
+        os.path.normpath("config/sound/playlisteventfestival.xml"),
         os.path.normpath("graphics/effects/road.fx"),
-        os.path.normpath("script/mainmenu/mainmenudefault_background.lua"),
+        os.path.normpath("script/mainmenu/mainmenudev.lua"),
     ]
 
     DEFAULT_GAME_PATH = r"C:\Program Files (x86)\Ubisoft\DIE SIEDLER - Aufstieg eines Königreichs"
@@ -45,13 +45,15 @@ class SystemEngine:
         self.scenarios_path = os.path.join(self.workspace_path, "Scenarios")
         self.backups_path = os.path.join(self.workspace_path, "Backups")
 
+        self.language = "en"
         self.load_settings()
 
         os.makedirs(self.backups_path, exist_ok=True)
         os.makedirs(self.original_mods_path, exist_ok=True)
 
     def load_settings(self):
-        """Lädt benutzerdefinierte Pfade aus settings.json falls vorhanden."""
+        """Lädt benutzerdefinierte Pfade und Einstellungen aus settings.json falls vorhanden."""
+        from ModManager.engines.i18n_engine import I18nEngine
         settings_file = os.path.join(self.workspace_path, "settings.json")
         if os.path.exists(settings_file):
             try:
@@ -68,28 +70,43 @@ class SystemEngine:
                         self.user_maps_path = os.path.normpath(data["user_maps_path"])
                     if "presets_path" in data and data["presets_path"]:
                         self.presets_path = os.path.normpath(data["presets_path"])
+                    if "language" in data and data["language"]:
+                        self.language = data["language"]
             except Exception:
                 pass
+        I18nEngine.get_instance().set_language(self.language)
 
-    def save_settings(self, paths: Dict[str, str]):
-        """Speichert benutzerdefinierte Pfade in settings.json."""
+    def save_settings(self, settings_data: Dict[str, Any]):
+        """Speichert benutzerdefinierte Einstellungen und Pfade in settings.json."""
+        from ModManager.engines.i18n_engine import I18nEngine
         settings_file = os.path.join(self.workspace_path, "settings.json")
         try:
-            # Normiere alle Pfade
-            norm_paths = {k: os.path.normpath(v) for k, v in paths.items() if v}
-            with open(settings_file, "w", encoding="utf-8") as f:
-                json.dump(norm_paths, f, indent=2, ensure_ascii=False)
+            # Bestehende Einstellungen laden falls vorhanden, um nichts zu überschreiben
+            data = {}
+            if os.path.exists(settings_file):
+                try:
+                    with open(settings_file, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                except Exception:
+                    data = {}
 
-            if "game_path" in norm_paths:
-                self.game_path = norm_paths["game_path"]
-            if "modloader_path" in norm_paths:
-                self.modloader_path = norm_paths["modloader_path"]
-            if "original_mods_path" in norm_paths:
-                self.original_mods_path = norm_paths["original_mods_path"]
-            if "user_maps_path" in norm_paths:
-                self.user_maps_path = norm_paths["user_maps_path"]
-            if "presets_path" in norm_paths:
-                self.presets_path = norm_paths["presets_path"]
+            path_keys = {"game_path", "modloader_path", "original_mods_path", "user_maps_path", "presets_path"}
+            for k, v in settings_data.items():
+                if k in path_keys:
+                    if v:
+                        norm_v = os.path.normpath(v)
+                        data[k] = norm_v
+                        setattr(self, k, norm_v)
+                else:
+                    data[k] = v
+
+            if "language" in settings_data:
+                self.language = settings_data["language"]
+                I18nEngine.get_instance().set_language(self.language)
+
+            with open(settings_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+
         except Exception as e:
             raise IOError(f"Konnte Einstellungen nicht speichern: {e}")
 
