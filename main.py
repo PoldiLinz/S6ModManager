@@ -19,6 +19,15 @@ if parent_dir not in sys.path:
 import traceback
 import logging
 
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QApplication, QMessageBox
+
+try:
+    from ModManager.app_window import MainWindow
+except ImportError:
+    from app_window import MainWindow
+
 # Logdatei im UserMods-Verzeichnis
 log_file = os.path.join(parent_dir, "mod_manager.log")
 logging.basicConfig(
@@ -36,7 +45,6 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     logging.critical("Unbehandelte Ausnahme:\n" + err_msg)
     print("\n[KRITISCHER FEHLER]\n" + err_msg, file=sys.stderr)
     try:
-        from PyQt6.QtWidgets import QMessageBox
         QMessageBox.critical(None, "Mod Manager Fehler", f"Ein unerwarteter Fehler ist aufgetreten:\n\n{exc_value}\n\nDetails in mod_manager.log.")
     except Exception:
         pass
@@ -56,8 +64,6 @@ def main():
         app = QApplication(sys.argv)
         app.setApplicationName("Siedler 6 Mod & Map Manager")
         app.setOrganizationName("Siedler 6 Modding Community")
-
-        from PyQt6.QtGui import QIcon
 
         # QSS Stylesheet laden
         theme_path = os.path.join(current_dir, "styles", "theme.qss")

@@ -9,7 +9,7 @@ import ctypes
 import shutil
 import zipfile
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Any
 
 
 class SystemEngine:
@@ -84,7 +84,7 @@ class SystemEngine:
         except Exception:
             return False
 
-    def check_s6patcher_integrity(self) -> Tuple[str, List[Dict[str, any]]]:
+    def check_s6patcher_integrity(self) -> Tuple[str, List[Dict[str, Any]]]:
         """
         Überprüft den Zustand der unverzichtbaren S6Patcher-Kerndateien.
         Rückgabe: (Status: 'OK'|'WARNING'|'ERROR', Liste der Dateistatus)
@@ -125,7 +125,7 @@ class SystemEngine:
                 return True
         return False
 
-    def list_active_modloader_files(self) -> List[Dict[str, any]]:
+    def list_active_modloader_files(self) -> List[Dict[str, Any]]:
         """Listet alle aktuell im ModLoader vorhandenen Dateien auf."""
         files_list = []
         if not os.path.exists(self.modloader_path):
@@ -212,7 +212,7 @@ class SystemEngine:
 
         return restored_count
 
-    def list_backups(self) -> List[Dict[str, any]]:
+    def list_backups(self) -> List[Dict[str, Any]]:
         """Listet alle vorhandenen Backups auf."""
         backups = []
         if not os.path.exists(self.backups_path):
@@ -221,6 +221,10 @@ class SystemEngine:
         for f in os.listdir(self.backups_path):
             if f.endswith(".zip"):
                 p = os.path.join(self.backups_path, f)
+                try:
+                    size = os.path.getsize(p)
+                except Exception:
+                    size = 0
                 try:
                     mtime_val = os.path.getmtime(p)
                     if mtime_val > 0:

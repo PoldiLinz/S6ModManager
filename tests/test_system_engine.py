@@ -34,6 +34,23 @@ class TestSystemEngine(unittest.TestCase):
         backups = self.engine.list_backups()
         self.assertIsInstance(backups, list)
 
+        # Test mit einer temporären Backup-ZIP-Datei
+        test_zip = os.path.join(self.engine.backups_path, "test_dummy_backup.zip")
+        try:
+            import zipfile
+            with zipfile.ZipFile(test_zip, "w") as zf:
+                zf.writestr("dummy.txt", "test content")
+            backups = self.engine.list_backups()
+            self.assertGreaterEqual(len(backups), 1)
+            found = next((b for b in backups if b["filename"] == "test_dummy_backup.zip"), None)
+            self.assertIsNotNone(found)
+            self.assertGreater(found["size_bytes"], 0)
+            self.assertIn("KB", found["size_str"])
+            self.assertNotEqual(found["created"], "Unbekannt")
+        finally:
+            if os.path.exists(test_zip):
+                os.remove(test_zip)
+
 
 if __name__ == "__main__":
     unittest.main()
