@@ -62,14 +62,193 @@ class ConfigEngine:
                     pass
         return presets
 
+    def _read_xml_from_modloader(self, rel_path: str) -> Optional[ET.Element]:
+        """Liest eine XML-Datei aus dem aktiven ModLoader-Ordner, falls vorhanden."""
+        full_path = os.path.join(self.system.modloader_path, rel_path)
+        if os.path.exists(full_path):
+            try:
+                tree = ET.parse(full_path)
+                return tree.getroot()
+            except Exception:
+                return None
+        return None
+
+    def _read_xml_text(self, root: ET.Element, xpath: str, default, cast=int):
+        """Liest einen einzelnen Textwert aus einem XML-Knoten."""
+        elem = root.find(xpath)
+        if elem is not None and elem.text:
+            try:
+                return cast(elem.text)
+            except (ValueError, TypeError):
+                return default
+        return default
+
+    def _read_xml_list(self, root: ET.Element, xpath: str, default_list: List, cast=int) -> List:
+        """Liest eine Liste von Werten aus wiederholten XML-Knoten."""
+        elems = root.findall(xpath)
+        if elems:
+            result = []
+            for e in elems:
+                if e.text:
+                    try:
+                        result.append(cast(e.text))
+                    except (ValueError, TypeError):
+                        pass
+            return result if result else default_list
+        return default_list
+
+    def read_active_config_from_modloader(self) -> Dict[str, Any]:
+        """
+        Liest die tatsächlichen Werte direkt aus den XML-Dateien im aktiven
+        ModLoader-Ordner. Dies ist die Single Source of Truth.
+        Wenn eine Datei nicht existiert, werden die Vanilla-Defaults verwendet.
+        """
+        config: Dict[str, Any] = {}
+
+        # 1. logic.xml -> settler_limits, road_speed_modifier
+        logic = self._read_xml_from_modloader(os.path.normpath("config/logic.xml"))
+        if logic is not None:
+            config["settler_limits"] = self._read_xml_list(
+                logic, ".//SettlerLimit", [50, 50, 100, 150, 200, 200]
+            )
+            config["road_speed_modifier"] = self._read_xml_text(
+                logic, ".//SpeedFactorRoad", 1.25, float
+            )
+        else:
+            config["settler_limits"] = [50, 50, 100, 150, 200, 200]
+            config["road_speed_modifier"] = 1.25
+
+        # 2. b_storehouse.xml
+        store = self._read_xml_from_modloader(os.path.normpath("config/entities/b_storehouse.xml"))
+        if store is not None:
+            config["storehouse_capacities"] = self._read_xml_list(
+                store, ".//OutStockCapacity", [54, 108, 162, 216]
+            )
+            config["storehouse_max_amount_on_stock"] = self._read_xml_text(
+                store, ".//MaxAmountOnStock", 18
+            )
+            # Upgrade Gold: Letzen Wert extrahieren
+            gold_amounts = []
+            for uc in store.findall(".//UpgradeCost"):
+                for ga in uc.findall("GoodAmount"):
+                    gt = ga.find("GoodType")
+                    amt = ga.find("Amount")
+                    if gt is not None and gt.text == "G_Gold" and amt is not None:
+                        try:
+                            gold_amounts.append(int(amt.text))
+                        except (ValueError, TypeError):
+                            pass
+            config["storehouse_upgrade_gold"] = gold_amounts if gold_amounts else [150, 250, 500]
+        else:
+            config["storehouse_capacities"] = [54, 108, 162, 216]
+            config["storehouse_max_amount_on_stock"] = 18
+            config["storehouse_upgrade_gold"] = [150, 250, 500]
+
+        # 3. Castle (verwende b_castle_me.xml als Referenz)
+        castle = self._read_xml_from_modloader(os.path.normpath("config/entities/b_castle_me.xml"))
+        if castle is not None:
+            config["castle_soldier_limits"] = self._read_xml_list(
+                castle, ".//Limit", [25, 43, 61, 91]
+            )
+            config["castle_treasury_capacities"] = self._read_xml_list(
+                castle, ".//TreasuryStorageCapacity", [20000, 20000, 20000, 20000]
+            )
+            config["castle_hitpoints"] = self._read_xml_list(
+                castle, ".//MaxHitpoint", [750, 1500, 2250, 3000]
+            )
+        else:
+            config["castle_soldier_limits"] = [25, 43, 61, 91]
+            config["castle_treasury_capacities"] = [20000, 20000, 20000, 20000]
+            config["castle_hitpoints"] = [750, 1500, 2250, 3000]
+
+        # 4. Cathedral (b_cathedral.xml als Referenz)
+        cath = self._read_xml_from_modloader(os.path.normpath("config/entities/b_cathedral.xml"))
+        if cath is not None:
+            config["cathedral_sermon_limits"] = self._read_xml_list(
+                cath, ".//SermonSettlerLimit", [10, 15, 30, 60]
+            )
+            config["cathedral_prestige_points"] = self._read_xml_list(
+                cath, ".//PrestigePoints", [100, 200, 400]
+            )
+        else:
+            config["cathedral_sermon_limits"] = [10, 15, 30, 60]
+            config["cathedral_prestige_points"] = [100, 200, 400]
+
+        # 5. Minen
+        stone = self._read_xml_from_modloader(os.path.normpath("config/entities/r_stonemine.xml"))
+        config["mine_stone_capacity"] = self._read_xml_text(stone, ".//Capacity", 250) if stone is not None else 250
+
+        iron = self._read_xml_from_modloader(os.path.normpath("config/entities/r_ironmine.xml"))
+        config["mine_iron_capacity"] = self._read_xml_text(iron, ".//Capacity", 250) if iron is not None else 250
+
+        # 6. Brunnen
+        well = self._read_xml_from_modloader(os.path.normpath("config/entities/b_well.xml"))
+        if well is not None:
+            config["well_water_refill_rate"] = self._read_xml_text(
+                well, ".//WaterRefillRatePerSecond", 0.5, float
+            )
+            config["well_water_capacity"] = self._read_xml_list(
+                well, ".//OutStockCapacity", [25, 50, 75, 100]
+            )
+        else:
+            config["well_water_refill_rate"] = 0.5
+            config["well_water_capacity"] = [25, 50, 75, 100]
+
+        # 7. Mauern / Tore / Türme (jeweils _me als Referenz)
+        gate = self._read_xml_from_modloader(os.path.normpath("config/entities/b_wallgate_me.xml"))
+        config["wall_gate_health"] = self._read_xml_text(gate, ".//MaxHealth", 1200) if gate is not None else 1200
+
+        turret = self._read_xml_from_modloader(os.path.normpath("config/entities/b_wallturret_me.xml"))
+        config["wall_turret_health"] = self._read_xml_text(turret, ".//MaxHealth", 1000) if turret is not None else 1000
+
+        segment = self._read_xml_from_modloader(os.path.normpath("config/entities/b_wallsegment_me.xml"))
+        config["wall_segment_health"] = self._read_xml_text(segment, ".//MaxHealth", 800) if segment is not None else 800
+
+        # 8. Kasernen (Bataillonsgröße)
+        barracks = self._read_xml_from_modloader(os.path.normpath("config/entities/b_barracks.xml"))
+        config["battalion_size"] = self._read_xml_text(barracks, ".//BattalionSize", 6) if barracks is not None else 6
+
+        # 9. Soldaten
+        sword = self._read_xml_from_modloader(os.path.normpath("config/entities/u_militarysword.xml"))
+        if sword is not None:
+            config["soldier_speed"] = self._read_xml_text(sword, ".//Speed", 480)
+            config["soldier_health"] = self._read_xml_text(sword, ".//MaxHealth", 120)
+        else:
+            config["soldier_speed"] = 480
+            config["soldier_health"] = 120
+
+        # 10. Karren
+        cart = self._read_xml_from_modloader(os.path.normpath("config/entities/m_hunterpushcart.xml"))
+        config["cart_speed"] = self._read_xml_text(cart, ".//Speed", 320) if cart is not None else 320
+
+        # 11. Betriebe
+        bakery = self._read_xml_from_modloader(os.path.normpath("config/entities/b_bakery.xml"))
+        if bakery is not None:
+            caps = self._read_xml_list(bakery, ".//OutStockCapacity", [9])
+            config["workshop_output_capacity"] = caps[0] if caps else 9
+        else:
+            config["workshop_output_capacity"] = 9
+
+        return config
+
     # -------------------------------------------------------------------------
     # XML Modification Helper Functions
     # -------------------------------------------------------------------------
 
+    def _get_base_xml_path(self, rel_path: str) -> str:
+        """
+        Ermittelt den Pfad zur Basis-XML. 
+        Bevorzugt Preloaded-Mods aus Original/mod (S6Patcher Fixes), fällt auf Vanilla zurück.
+        """
+        preloaded_path = os.path.join(self.system.original_mods_path, rel_path)
+        if os.path.exists(preloaded_path):
+            return preloaded_path
+        return os.path.join(self.vanilla_dir, rel_path)
+
     def _modify_logic_xml(self, config: Dict[str, Any]) -> str:
         """Erstellt den modifizierten XML-Inhalt für logic.xml."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "logic.xml")
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath("config/logic.xml"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         # Settler Limits
@@ -85,7 +264,7 @@ class ConfigEngine:
 
         # Road Speed
         road_speed = config.get("road_speed_modifier")
-        if road_speed:
+        if road_speed is not None:
             elem = root.find("SpeedFactorRoad")
             if elem is not None:
                 elem.text = str(road_speed)
@@ -94,8 +273,8 @@ class ConfigEngine:
 
     def _modify_storehouse_xml(self, config: Dict[str, Any]) -> str:
         """Modifiziert b_storehouse.xml."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "entities", "b_storehouse.xml")
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath("config/entities/b_storehouse.xml"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         # OutStockCapacities
@@ -110,7 +289,7 @@ class ConfigEngine:
 
         # MaxAmountOnStock
         max_amount = config.get("storehouse_max_amount_on_stock")
-        if max_amount:
+        if max_amount is not None:
             elem = root.find(".//MaxAmountOnStock")
             if elem is not None:
                 elem.text = str(max_amount)
@@ -161,8 +340,8 @@ class ConfigEngine:
 
     def _modify_castle_xml(self, xml_filename: str, config: Dict[str, Any]) -> str:
         """Modifiziert b_castle_*.xml."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "entities", xml_filename)
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath(f"config/entities/{xml_filename}"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         # SoldierLimits
@@ -192,7 +371,8 @@ class ConfigEngine:
                 if i < len(hitpoints):
                     elem.text = str(hitpoints[i])
 
-        # Upgrade Costs
+        # Upgrade Costs (TODO: Aktuell nicht über die GUI exponiert – Schlüssel
+        # castle_upgrade_gold / castle_upgrade_stone werden von _collect_data_from_widgets nicht erzeugt)
         gold_costs = config.get("castle_upgrade_gold")
         stone_costs = config.get("castle_upgrade_stone")
         if gold_costs and stone_costs:
@@ -228,8 +408,8 @@ class ConfigEngine:
 
     def _modify_cathedral_xml(self, xml_filename: str, config: Dict[str, Any]) -> str:
         """Modifiziert b_cathedral*.xml."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "entities", xml_filename)
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath(f"config/entities/{xml_filename}"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         # SermonSettlerLimits
@@ -252,7 +432,8 @@ class ConfigEngine:
                     c = ET.SubElement(elem, "PrestigePoints")
                     c.text = str(val)
 
-        # Upgrade Costs
+        # Upgrade Costs (TODO: Aktuell nicht über die GUI exponiert – Schlüssel
+        # cathedral_upgrade_gold / cathedral_upgrade_stone werden von _collect_data_from_widgets nicht erzeugt)
         gold_costs = config.get("cathedral_upgrade_gold")
         stone_costs = config.get("cathedral_upgrade_stone")
         if gold_costs and stone_costs:
@@ -288,8 +469,8 @@ class ConfigEngine:
 
     def _modify_resource_mine_xml(self, xml_filename: str, capacity: int) -> str:
         """Modifiziert r_stonemine.xml und r_ironmine.xml."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "entities", xml_filename)
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath(f"config/entities/{xml_filename}"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         elem = root.find(".//Capacity")
@@ -300,12 +481,12 @@ class ConfigEngine:
 
     def _modify_well_xml(self, config: Dict[str, Any]) -> str:
         """Modifiziert b_well.xml."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "entities", "b_well.xml")
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath("config/entities/b_well.xml"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         refill = config.get("well_water_refill_rate")
-        if refill:
+        if refill is not None:
             elem = root.find(".//WaterRefillRatePerSecond")
             if elem is not None:
                 elem.text = str(refill)
@@ -321,8 +502,8 @@ class ConfigEngine:
 
     def _modify_wall_health_xml(self, xml_filename: str, health: int) -> str:
         """Modifiziert MaxHealth von Mauern, Toren und Türmen."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "entities", xml_filename)
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath(f"config/entities/{xml_filename}"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         elem = root.find(".//MaxHealth")
@@ -333,8 +514,8 @@ class ConfigEngine:
 
     def _modify_barracks_xml(self, xml_filename: str, battalion_size: int) -> str:
         """Modifiziert BattalionSize in b_barracks*.xml."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "entities", xml_filename)
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath(f"config/entities/{xml_filename}"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         elem = root.find(".//BattalionSize")
@@ -345,8 +526,8 @@ class ConfigEngine:
 
     def _modify_soldier_xml(self, xml_filename: str, speed: Optional[int], health: Optional[int]) -> str:
         """Modifiziert Geschwindigkeit und Lebenspunkte von Soldaten."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "entities", xml_filename)
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath(f"config/entities/{xml_filename}"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         if speed is not None:
@@ -363,8 +544,8 @@ class ConfigEngine:
 
     def _modify_cart_xml(self, speed: int) -> str:
         """Modifiziert Geschwindigkeit von Karren."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "entities", "m_hunterpushcart.xml")
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath("config/entities/m_hunterpushcart.xml"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         elem = root.find(".//Speed")
@@ -375,8 +556,8 @@ class ConfigEngine:
 
     def _modify_workshop_xml(self, xml_filename: str, out_stock: int) -> str:
         """Modifiziert Puffer-Kapazität von Betrieben."""
-        vanilla_path = os.path.join(self.vanilla_dir, "config", "entities", xml_filename)
-        tree = ET.parse(vanilla_path)
+        base_path = self._get_base_xml_path(os.path.normpath(f"config/entities/{xml_filename}"))
+        tree = ET.parse(base_path)
         root = tree.getroot()
 
         elems = root.findall(".//OutStockCapacity")
@@ -418,23 +599,23 @@ class ConfigEngine:
 
         # 7. Walls, Gates, Turrets
         gate_hp = config.get("wall_gate_health")
-        if gate_hp:
+        if gate_hp is not None:
             for gf in ["b_wallgate_me.xml", "b_wallgate_na.xml", "b_wallgate_ne.xml", "b_wallgate_se.xml"]:
                 generated[os.path.normpath(f"config/entities/{gf}")] = self._modify_wall_health_xml(gf, gate_hp)
 
         turret_hp = config.get("wall_turret_health")
-        if turret_hp:
+        if turret_hp is not None:
             for tf in ["b_wallturret_me.xml", "b_wallturret_na.xml", "b_wallturret_ne.xml", "b_wallturret_se.xml"]:
                 generated[os.path.normpath(f"config/entities/{tf}")] = self._modify_wall_health_xml(tf, turret_hp)
 
         segment_hp = config.get("wall_segment_health")
-        if segment_hp:
+        if segment_hp is not None:
             for sf in ["b_wallsegment_me.xml", "b_wallsegment_na.xml", "b_wallsegment_ne.xml", "b_wallsegment_se.xml"]:
                 generated[os.path.normpath(f"config/entities/{sf}")] = self._modify_wall_health_xml(sf, segment_hp)
 
         # 8. Barracks
         b_size = config.get("battalion_size")
-        if b_size:
+        if b_size is not None:
             for bf in ["b_barracks.xml", "b_barracksarchers.xml"]:
                 generated[os.path.normpath(f"config/entities/{bf}")] = self._modify_barracks_xml(bf, b_size)
 
@@ -447,12 +628,12 @@ class ConfigEngine:
 
         # 10. Cart Speed
         c_speed = config.get("cart_speed")
-        if c_speed:
+        if c_speed is not None:
             generated[os.path.normpath("config/entities/m_hunterpushcart.xml")] = self._modify_cart_xml(c_speed)
 
         # 11. Workshop Buffer
         ws_cap = config.get("workshop_output_capacity")
-        if ws_cap:
+        if ws_cap is not None:
             for wsf in ["b_bakery.xml", "b_butcher.xml", "b_dairy.xml"]:
                 generated[os.path.normpath(f"config/entities/{wsf}")] = self._modify_workshop_xml(wsf, ws_cap)
 
@@ -479,15 +660,17 @@ class ConfigEngine:
 
     def restore_vanilla_configs(self) -> int:
         """
-        Entfernt alle modifizierten XML-Dateien aus dem ModLoader,
-        sodass das Spiel wieder sauber auf die originalen BBA-Dateien zurückgreift.
+        Entfernt alle ModManager-Änderungen aus dem ModLoader.
+        Wenn eine Datei im S6Patcher-Preloaded-Ordner (Original/mod) existiert,
+        wird sie daraus wiederhergestellt. Andernfalls wird sie gelöscht (echtes Vanilla).
         Geschützte S6Patcher-Dateien bleiben unangetastet!
         """
-        removed_count = 0
+        restored_count = 0
         if not os.path.exists(self.system.modloader_path):
             return 0
 
-        # Zu entfernende Config-Pfade prüfen
+        # Zu überprüfende Config-Pfade (wir iterieren durch die generierten Pfade)
+        # Besser: Wir iterieren durch alle Dateien im config-Ordner des aktiven ModLoaders
         config_dir = os.path.join(self.system.modloader_path, "config")
         if os.path.exists(config_dir):
             for root, _, files in os.walk(config_dir):
@@ -496,7 +679,14 @@ class ConfigEngine:
                     rel_path = os.path.relpath(full_path, self.system.modloader_path)
                     
                     if not self.system.is_protected_file(rel_path):
-                        os.remove(full_path)
-                        removed_count += 1
+                        # Prüfen ob im Original-Ordner vorhanden
+                        original_file_path = os.path.join(self.system.original_mods_path, rel_path)
+                        if os.path.exists(original_file_path):
+                            # Wiederherstellen aus Preloaded Mod
+                            shutil.copy2(original_file_path, full_path)
+                        else:
+                            # Löschen (Vanilla Fallback auf .bba)
+                            os.remove(full_path)
+                        restored_count += 1
 
-        return removed_count
+        return restored_count

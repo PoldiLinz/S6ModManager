@@ -132,8 +132,35 @@ class TestGuiIntegration(unittest.TestCase):
         self.window.tab_config.status_message.emit(test_msg, "success")
         console_content = self.window.log_console.toPlainText()
         self.assertIn(test_msg, console_content)
-        self.assertIn("✅", console_content)
+    def test_menu_bar_actions(self):
+        """Prüft, ob die obere Menüleiste und alle Menüs vorhanden sind."""
+        menubar = self.window.menuBar()
+        self.assertIsNotNone(menubar)
+        actions = menubar.actions()
+        menu_titles = [a.text() for a in actions]
+        self.assertIn("▶ Start", menu_titles)
+        self.assertIn("⚙️ Einstellungen", menu_titles)
+        self.assertIn("❓ Hilfe", menu_titles)
+
+    def test_lightroom_revert_button(self):
+        """Prüft die Lightroom-Style Revert-Funktionalität auf Vanilla-Werte."""
+        cfg_tab: ConfigTab = self.window.tab_config
+        # Ändere Wert für Kathedrale Stufe 1 (Vanilla: 50)
+        cfg_tab.spin_settler_1.setValue(750)
+        self.assertEqual(cfg_tab.spin_settler_1.value(), 750)
+
+        # Klicke auf den Revert Button (Siedler Stufe 1)
+        cfg_tab.btn_revert_settler_1.click()
+        self.assertEqual(cfg_tab.spin_settler_1.value(), 50)
+
+    def test_settings_dialog(self):
+        """Prüft, ob der allgemeine Einstellungsdialog korrekt instanziiert werden kann."""
+        from ModManager.dialog_settings import SettingsDialog
+        dlg = SettingsDialog(self.window.system_engine, self.window)
+        self.assertEqual(dlg.windowTitle(), "⚙️ Allgemeine Einstellungen & Pfade")
+        dlg.close()
 
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -18,6 +18,57 @@ QMainWindow {
     background-color: #15171c;
 }
 
+/* Menüleiste */
+QMenuBar {
+    background-color: #15171c;
+    color: #cbd5e1;
+    border-bottom: 1px solid #282e3b;
+    padding: 3px 8px;
+    font-size: 13px;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 5px 12px;
+    border-radius: 4px;
+    color: #cbd5e1;
+}
+
+QMenuBar::item:selected {
+    background-color: #262c39;
+    color: #f0c34e;
+}
+
+QMenuBar::item:pressed {
+    background-color: #1f2430;
+    color: #dfb23b;
+}
+
+QMenu {
+    background-color: #1d212b;
+    color: #e4e8ee;
+    border: 1px solid #333a4a;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+QMenu::item {
+    padding: 6px 24px 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+QMenu::item:selected {
+    background-color: #2b3344;
+    color: #f0c34e;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #2e3544;
+    margin: 4px 6px;
+}
+
 /* Header & Cards */
 QFrame#HeaderFrame {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #252a36, stop:1 #1c202a);
@@ -200,20 +251,66 @@ QPushButton#PrimaryButton:pressed {
     background: #9e7a17;
 }
 
-/* Danger / Revert Button */
+/* Danger / Revert Button - dezent und harmonisch */
 QPushButton#DangerButton {
-    background-color: #3b2222;
+    background-color: #232732;
     color: #f87171;
-    border: 1px solid #663333;
+    border: 1px solid #453438;
     border-radius: 6px;
     padding: 7px 16px;
     font-weight: bold;
 }
 
 QPushButton#DangerButton:hover {
-    background-color: #4f2c2c;
+    background-color: #32252a;
     border-color: #8c4242;
-    color: #ff9999;
+    color: #ffa4a4;
+}
+
+/* Vanilla Referenzwert Badge */
+QLabel#VanillaBadge {
+    background-color: #14171e;
+    color: #838fa3;
+    border: 1px solid #272d3b;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-family: "Consolas", "Segoe UI", monospace;
+    qproperty-alignment: 'AlignCenter';
+}
+
+/* Lightroom Style Revert Button (↺) */
+QPushButton#RevertBtn {
+    background-color: #1a1d26;
+    color: #dfb23b;
+    border: 1px solid #272c38;
+    border-radius: 4px;
+    padding: 2px;
+    font-size: 14px;
+    font-weight: bold;
+    min-width: 28px;
+    max-width: 28px;
+    min-height: 24px;
+    max-height: 24px;
+}
+
+QPushButton#RevertBtn:hover {
+    background-color: #2a2517;
+    color: #ffd700;
+    border-color: #c59b27;
+}
+
+/* Wenn Wert modifiziert ist: Lightroom-artiges aktives Leuchten */
+QPushButton#RevertBtn[modified="true"] {
+    background-color: #342a15;
+    color: #ffd700;
+    border: 1px solid #dfb23b;
+}
+
+QPushButton#RevertBtn[modified="true"]:hover {
+    background-color: #42361b;
+    color: #ffffff;
+    border-color: #f5ca4e;
 }
 
 /* Eingabefelder (Spinbox, LineEdit, ComboBox) */
@@ -224,11 +321,26 @@ QSpinBox, QDoubleSpinBox, QLineEdit {
     border-radius: 4px;
     padding: 5px 8px;
     font-size: 13px;
+    qproperty-alignment: 'AlignCenter';
 }
 
 QSpinBox:focus, QDoubleSpinBox:focus, QLineEdit:focus {
     border: 1px solid #c59b27;
     background-color: #181b24;
+}
+
+/* Hervorhebung modifizierter Werte (Gold-Gelb) */
+QSpinBox[modified="true"], QDoubleSpinBox[modified="true"] {
+    color: #ffd700;
+    border: 1px solid #856721;
+    background-color: #1f1b14;
+    font-weight: bold;
+}
+
+QSpinBox[modified="true"]:focus, QDoubleSpinBox[modified="true"]:focus {
+    border: 1px solid #dfb23b;
+    background-color: #272218;
+    color: #ffffff;
 }
 
 QComboBox {

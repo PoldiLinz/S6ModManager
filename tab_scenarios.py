@@ -195,9 +195,10 @@ class ScenarioTab(QWidget):
         self.lbl_active_badge.style().unpolish(self.lbl_active_badge)
         self.lbl_active_badge.style().polish(self.lbl_active_badge)
 
-        # Varianten neu aufbauen
+        # Varianten neu aufbauen - alte Buttons aus Layout UND ButtonGroup entfernen
         for btn in self.btn_group_vars.buttons():
             self.btn_group_vars.removeButton(btn)
+            self.var_layout.removeWidget(btn)
             btn.deleteLater()
 
         variations = map_data.get("variations", [])

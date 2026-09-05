@@ -5,6 +5,7 @@ Verwaltet Pfade, UAC-Rechte, S6Patcher-Schutzdateien und ModLoader-Dateistatus.
 
 import os
 import sys
+import json
 import ctypes
 import shutil
 import zipfile
@@ -38,12 +39,59 @@ class SystemEngine:
 
         self.game_path = game_path or self._detect_game_path()
         self.modloader_path = os.path.join(self.game_path, "modloader", "shr", "mod")
+        self.original_mods_path = os.path.join(self.workspace_path, "Original", "mod")
         self.user_maps_path = self._detect_user_maps_path()
         self.presets_path = os.path.join(self.workspace_path, "Presets")
         self.scenarios_path = os.path.join(self.workspace_path, "Scenarios")
         self.backups_path = os.path.join(self.workspace_path, "Backups")
 
+        self.load_settings()
+
         os.makedirs(self.backups_path, exist_ok=True)
+        os.makedirs(self.original_mods_path, exist_ok=True)
+
+    def load_settings(self):
+        """Lädt benutzerdefinierte Pfade aus settings.json falls vorhanden."""
+        settings_file = os.path.join(self.workspace_path, "settings.json")
+        if os.path.exists(settings_file):
+            try:
+                with open(settings_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if "game_path" in data and data["game_path"]:
+                        self.game_path = os.path.normpath(data["game_path"])
+                        self.modloader_path = os.path.join(self.game_path, "modloader", "shr", "mod")
+                    if "modloader_path" in data and data["modloader_path"]:
+                        self.modloader_path = os.path.normpath(data["modloader_path"])
+                    if "original_mods_path" in data and data["original_mods_path"]:
+                        self.original_mods_path = os.path.normpath(data["original_mods_path"])
+                    if "user_maps_path" in data and data["user_maps_path"]:
+                        self.user_maps_path = os.path.normpath(data["user_maps_path"])
+                    if "presets_path" in data and data["presets_path"]:
+                        self.presets_path = os.path.normpath(data["presets_path"])
+            except Exception:
+                pass
+
+    def save_settings(self, paths: Dict[str, str]):
+        """Speichert benutzerdefinierte Pfade in settings.json."""
+        settings_file = os.path.join(self.workspace_path, "settings.json")
+        try:
+            # Normiere alle Pfade
+            norm_paths = {k: os.path.normpath(v) for k, v in paths.items() if v}
+            with open(settings_file, "w", encoding="utf-8") as f:
+                json.dump(norm_paths, f, indent=2, ensure_ascii=False)
+
+            if "game_path" in norm_paths:
+                self.game_path = norm_paths["game_path"]
+            if "modloader_path" in norm_paths:
+                self.modloader_path = norm_paths["modloader_path"]
+            if "original_mods_path" in norm_paths:
+                self.original_mods_path = norm_paths["original_mods_path"]
+            if "user_maps_path" in norm_paths:
+                self.user_maps_path = norm_paths["user_maps_path"]
+            if "presets_path" in norm_paths:
+                self.presets_path = norm_paths["presets_path"]
+        except Exception as e:
+            raise IOError(f"Konnte Einstellungen nicht speichern: {e}")
 
     def _detect_game_path(self) -> str:
         """Sucht nach dem Spielverzeichnis."""
@@ -156,7 +204,7 @@ class SystemEngine:
                     "category": "S6Patcher System" if is_prot else self._categorize_file(rel_path)
                 })
 
-        return sorted(files_list, key=lambda x: (x["is_protected"], x["category"], x["relative_path"]))
+        return sorted(files_list, key=lambda x: (not x["is_protected"], x["category"], x["relative_path"]))
 
     def _categorize_file(self, rel_path: str) -> str:
         """Kategorisiert eine Datei nach Verwendungszweck."""
