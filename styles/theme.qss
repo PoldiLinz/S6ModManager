@@ -1,0 +1,397 @@
+/* ==========================================================================
+   DIE SIEDLER 6 - MOD & MAP MANAGER (PyQt6 MODERN DARK THEME)
+   Farbschema: Dark Charcoal (#1a1d24, #222631) mit Siedler-Gold (#c59b27, #dfb23b)
+   ========================================================================== */
+
+/* Globale Einstellungen */
+QWidget {
+    background-color: #1a1d24;
+    color: #e4e8ee;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 13px;
+    selection-background-color: #c59b27;
+    selection-color: #121418;
+}
+
+/* Fenster-Hintergrund */
+QMainWindow {
+    background-color: #15171c;
+}
+
+/* Header & Cards */
+QFrame#HeaderFrame {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #252a36, stop:1 #1c202a);
+    border-bottom: 2px solid #c59b27;
+    padding: 12px;
+}
+
+QFrame#CardFrame {
+    background-color: #222632;
+    border: 1px solid #333a4a;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+QFrame#SubCardFrame {
+    background-color: #1d212b;
+    border: 1px solid #2d3342;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+/* Titel und Labels */
+QLabel#HeaderTitle {
+    font-size: 18px;
+    font-weight: bold;
+    color: #f0c34e;
+    letter-spacing: 1px;
+}
+
+QLabel#HeaderSubtitle {
+    font-size: 12px;
+    color: #9aa5b8;
+}
+
+QLabel#SectionHeader {
+    font-size: 15px;
+    font-weight: bold;
+    color: #dfb23b;
+    margin-bottom: 6px;
+}
+
+QLabel#CardTitle {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+QLabel#DimLabel {
+    color: #8c96a8;
+    font-size: 12px;
+}
+
+QLabel#BadgeSuccess {
+    background-color: #1b3d29;
+    color: #4ade80;
+    border: 1px solid #23633e;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+QLabel#BadgeWarning {
+    background-color: #3d311b;
+    color: #facc15;
+    border: 1px solid #635023;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+QLabel#BadgeError {
+    background-color: #3d1b1b;
+    color: #f87171;
+    border: 1px solid #632323;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+/* Haupt-Registerkarten (QTabWidget) */
+QTabWidget::pane {
+    border: 1px solid #333a4a;
+    border-radius: 0px 0px 8px 8px;
+    background-color: #1f232d;
+    top: -1px;
+}
+
+QTabBar::tab {
+    background-color: #181b22;
+    color: #9aa5b8;
+    border: 1px solid #333a4a;
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 10px 18px;
+    margin-right: 3px;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+QTabBar::tab:selected {
+    background-color: #1f232d;
+    color: #f0c34e;
+    border-top: 3px solid #c59b27;
+    border-left: 1px solid #333a4a;
+    border-right: 1px solid #333a4a;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #272d3b;
+    color: #ffffff;
+}
+
+/* Sub-Tabs (Sub-Categories) */
+QTabWidget#SubTabWidget::pane {
+    border: 1px solid #2d3342;
+    background-color: #1b1e27;
+    border-radius: 6px;
+}
+
+QTabWidget#SubTabWidget QTabBar::tab {
+    background-color: #151820;
+    color: #8c96a8;
+    padding: 7px 14px;
+    font-size: 12px;
+}
+
+QTabWidget#SubTabWidget QTabBar::tab:selected {
+    background-color: #1b1e27;
+    color: #dfb23b;
+    border-top: 2px solid #c59b27;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #2d3342;
+    color: #e4e8ee;
+    border: 1px solid #3d4659;
+    border-radius: 6px;
+    padding: 7px 16px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #394254;
+    border-color: #505c75;
+    color: #ffffff;
+}
+
+QPushButton:pressed {
+    background-color: #232834;
+}
+
+QPushButton:disabled {
+    background-color: #181b22;
+    color: #555e6d;
+    border-color: #262c37;
+}
+
+/* Gold Primary Action Button */
+QPushButton#PrimaryButton {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #dfb23b, stop:1 #b58d1f);
+    color: #121418;
+    border: 1px solid #ebc656;
+    border-radius: 6px;
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+QPushButton#PrimaryButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f5ca4e, stop:1 #c99e28);
+    border-color: #fff085;
+}
+
+QPushButton#PrimaryButton:pressed {
+    background: #9e7a17;
+}
+
+/* Danger / Revert Button */
+QPushButton#DangerButton {
+    background-color: #3b2222;
+    color: #f87171;
+    border: 1px solid #663333;
+    border-radius: 6px;
+    padding: 7px 16px;
+    font-weight: bold;
+}
+
+QPushButton#DangerButton:hover {
+    background-color: #4f2c2c;
+    border-color: #8c4242;
+    color: #ff9999;
+}
+
+/* Eingabefelder (Spinbox, LineEdit, ComboBox) */
+QSpinBox, QDoubleSpinBox, QLineEdit {
+    background-color: #161820;
+    color: #ffffff;
+    border: 1px solid #333a4a;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 13px;
+}
+
+QSpinBox:focus, QDoubleSpinBox:focus, QLineEdit:focus {
+    border: 1px solid #c59b27;
+    background-color: #181b24;
+}
+
+QComboBox {
+    background-color: #161820;
+    color: #ffffff;
+    border: 1px solid #333a4a;
+    border-radius: 5px;
+    padding: 6px 12px;
+    font-weight: bold;
+}
+
+QComboBox:hover {
+    border-color: #c59b27;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 25px;
+    border-left: 1px solid #333a4a;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #1d212b;
+    border: 1px solid #3c4354;
+    color: #ffffff;
+    selection-background-color: #c59b27;
+    selection-color: #121418;
+    padding: 4px;
+}
+
+/* Schieberegler (QSlider) */
+QSlider::groove:horizontal {
+    height: 6px;
+    background: #14161d;
+    border: 1px solid #2d3342;
+    border-radius: 3px;
+}
+
+QSlider::sub-page:horizontal {
+    background: #c59b27;
+    border-radius: 3px;
+}
+
+QSlider::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ffffff, stop:1 #e0e0e0);
+    border: 1px solid #c59b27;
+    width: 16px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    border-radius: 8px;
+}
+
+QSlider::handle:horizontal:hover {
+    background: #dfb23b;
+}
+
+/* Checkboxen */
+QCheckBox {
+    color: #e4e8ee;
+    spacing: 8px;
+}
+
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    background-color: #161820;
+    border: 1px solid #3a4254;
+    border-radius: 4px;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #c59b27;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #c59b27;
+    border-color: #dfb23b;
+    image: url(""); /* Checked state */
+}
+
+/* Listen & Tabellen */
+QListWidget, QTableWidget, QTreeWidget {
+    background-color: #171922;
+    border: 1px solid #2d3342;
+    border-radius: 6px;
+    color: #e4e8ee;
+    padding: 4px;
+}
+
+QListWidget::item {
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+}
+
+QListWidget::item:hover {
+    background-color: #232835;
+    color: #ffffff;
+}
+
+QListWidget::item:selected {
+    background-color: #2e3648;
+    color: #f0c34e;
+    border-left: 3px solid #c59b27;
+}
+
+QHeaderView::section {
+    background-color: #1b1e27;
+    color: #8c96a8;
+    border: none;
+    border-bottom: 1px solid #2d3342;
+    padding: 6px;
+    font-weight: bold;
+}
+
+/* Scrollbars */
+QScrollBar:vertical {
+    background: #15171d;
+    width: 10px;
+    border-radius: 5px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #333a4a;
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #465066;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+/* Log-Konsole */
+QPlainTextEdit#LogConsole {
+    background-color: #101216;
+    color: #cbd5e1;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12px;
+    border: 1px solid #262b37;
+    border-radius: 6px;
+    padding: 8px;
+}
+
+/* GroupBox */
+QGroupBox {
+    border: 1px solid #2d3342;
+    border-radius: 6px;
+    margin-top: 14px;
+    padding-top: 14px;
+    font-weight: bold;
+    color: #dfb23b;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 10px;
+    padding: 0 5px;
+    background-color: #1f232d;
+}
