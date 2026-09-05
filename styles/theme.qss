@@ -523,3 +523,37 @@ QGroupBox::title {
     padding: 0 5px;
     background-color: #1f232d;
 }
+
+/* Checkbox & RadioButton (Harmonisierte Toggle-Circles) */
+QCheckBox, QRadioButton {
+    spacing: 10px;
+    outline: none;
+}
+
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    border-radius: 9px;
+    border: 2px solid #c59b27;
+    background-color: transparent;
+}
+
+QCheckBox::indicator:hover, QRadioButton::indicator:hover {
+    border-color: #dfb23b;
+    background-color: rgba(197, 155, 39, 0.15);
+}
+
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
+    border: 2px solid #c59b27;
+    background-color: #c59b27;
+}
+
+QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {
+    border-color: #4a5366;
+    background-color: transparent;
+    color: #4a5366;
+}
+
+QCheckBox::indicator:checked:disabled, QRadioButton::indicator:checked:disabled {
+    background-color: #4a5366;
+}
