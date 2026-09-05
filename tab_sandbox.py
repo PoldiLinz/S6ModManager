@@ -14,6 +14,7 @@ from typing import Dict, List, Any, Optional
 
 from ModManager.engines.sandbox_engine import SandboxEngine
 from ModManager.engines.system_engine import SystemEngine
+from ModManager.engines import t
 
 
 class SandboxTab(QWidget):
@@ -40,14 +41,14 @@ class SandboxTab(QWidget):
         card_map.setObjectName("CardFrame")
         l_map = QVBoxLayout(card_map)
 
-        l_map.addWidget(QLabel("🎯 Zielkarte für High-Tier-Sandbox auswählen:"))
+        l_map.addWidget(QLabel(t("sandbox_tab.lbl_select_map")))
 
         h_pick = QHBoxLayout()
         self.combo_maps = QComboBox()
         self.combo_maps.currentIndexChanged.connect(self._on_map_changed)
         h_pick.addWidget(self.combo_maps, 1)
 
-        btn_refresh = QPushButton("🔄 Aktualisieren")
+        btn_refresh = QPushButton(t("sandbox_tab.btn_refresh"))
         btn_refresh.clicked.connect(self.refresh_maps)
         h_pick.addWidget(btn_refresh)
 
@@ -63,24 +64,26 @@ class SandboxTab(QWidget):
         card_opts.setObjectName("CardFrame")
         l_opts = QVBoxLayout(card_opts)
 
-        lbl_opts_title = QLabel("🧪 Zuschaltbare Test-Funktionen & Cheats")
+        lbl_opts_title = QLabel(t("sandbox_tab.lbl_options"))
         lbl_opts_title.setObjectName("SectionHeader")
         l_opts.addWidget(lbl_opts_title)
 
-        g_opts = QGridLayout()
+        v_opts = QVBoxLayout()
+        v_opts.setSpacing(10)
 
-        self.chk_duke = QCheckBox("Sofortiger Herzog-Titel (Stufe 6) in Sekunde 1")
+        self.chk_duke = QCheckBox(t("sandbox_tab.chk_duke"))
         self.chk_duke.setChecked(True)
         self.chk_duke.stateChanged.connect(self._update_lua_preview)
-        g_opts.addWidget(self.chk_duke, 0, 0, 1, 2)
+        v_opts.addWidget(self.chk_duke)
 
-        self.chk_resources = QCheckBox("Startkapital & Rohstoffe für Bauarbeiten")
+        self.chk_resources = QCheckBox(t("sandbox_tab.chk_resources"))
         self.chk_resources.setChecked(True)
         self.chk_resources.stateChanged.connect(self._update_lua_preview)
-        g_opts.addWidget(self.chk_resources, 1, 0)
+        v_opts.addWidget(self.chk_resources)
 
         h_amounts = QHBoxLayout()
-        h_amounts.addWidget(QLabel("Gold:"))
+        h_amounts.setContentsMargins(24, 0, 0, 0) # Indent spinboxes to sit nicely below the checkbox
+        h_amounts.addWidget(QLabel(t("sandbox_tab.lbl_gold")))
         self.spin_gold = QSpinBox()
         self.spin_gold.setRange(1000, 500000)
         self.spin_gold.setValue(50000)
@@ -88,33 +91,34 @@ class SandboxTab(QWidget):
         self.spin_gold.valueChanged.connect(self._update_lua_preview)
         h_amounts.addWidget(self.spin_gold)
 
-        h_amounts.addWidget(QLabel("Rohstoffe je Sorte:"))
+        h_amounts.addWidget(QLabel(t("sandbox_tab.lbl_resources")))
         self.spin_res = QSpinBox()
         self.spin_res.setRange(50, 5000)
         self.spin_res.setValue(500)
         self.spin_res.setSingleStep(50)
         self.spin_res.valueChanged.connect(self._update_lua_preview)
         h_amounts.addWidget(self.spin_res)
-        g_opts.addLayout(h_amounts, 1, 1)
+        h_amounts.addStretch()
+        v_opts.addLayout(h_amounts)
 
-        self.chk_storehouse = QCheckBox("Start-Lagerhaus voll beladen (Holz, Stein, Eisen)")
+        self.chk_storehouse = QCheckBox(t("sandbox_tab.chk_storehouse"))
         self.chk_storehouse.setChecked(True)
         self.chk_storehouse.stateChanged.connect(self._update_lua_preview)
-        g_opts.addWidget(self.chk_storehouse, 2, 0, 1, 2)
+        v_opts.addWidget(self.chk_storehouse)
 
-        self.chk_fog = QCheckBox("Nebel des Krieges aufdecken (Fog of War Reveal)")
+        self.chk_fog = QCheckBox(t("sandbox_tab.chk_fog"))
         self.chk_fog.setChecked(True)
         self.chk_fog.stateChanged.connect(self._update_lua_preview)
-        g_opts.addWidget(self.chk_fog, 3, 0, 1, 2)
+        v_opts.addWidget(self.chk_fog)
 
-        l_opts.addLayout(g_opts)
+        l_opts.addLayout(v_opts)
         layout.addWidget(card_opts)
 
         # 3. Lua Code Vorschau
         card_preview = QFrame()
         card_preview.setObjectName("SubCardFrame")
         l_prev = QVBoxLayout(card_preview)
-        l_prev.addWidget(QLabel("Generierter Lua-Sandbox-Code (wird am Ende von mapscript.lua ausgeführt):"))
+        l_prev.addWidget(QLabel(t("sandbox_tab.lbl_preview")))
 
         self.txt_lua_preview = QPlainTextEdit()
         self.txt_lua_preview.setObjectName("LogConsole")
@@ -127,14 +131,14 @@ class SandboxTab(QWidget):
         # 4. Action Buttons
         h_actions = QHBoxLayout()
 
-        self.btn_clean = QPushButton("🧹 Testmodus entfernen / Skript bereinigen")
+        self.btn_clean = QPushButton(t("sandbox_tab.btn_clean"))
         self.btn_clean.setObjectName("DangerButton")
         self.btn_clean.clicked.connect(self._on_remove_sandbox)
         h_actions.addWidget(self.btn_clean)
 
         h_actions.addStretch()
 
-        self.btn_inject = QPushButton("🧪 Testmodus in Kartenskript injizieren")
+        self.btn_inject = QPushButton(t("sandbox_tab.btn_inject"))
         self.btn_inject.setObjectName("PrimaryButton")
         self.btn_inject.clicked.connect(self._on_inject_sandbox)
         h_actions.addWidget(self.btn_inject)
@@ -153,7 +157,7 @@ class SandboxTab(QWidget):
         self.current_maps = self.sandbox.list_testable_maps()
 
         for m in self.current_maps:
-            status_tag = " [INJIZIERT]" if m["is_injected"] else ""
+            status_tag = t("sandbox_tab.injected_tag") if m["is_injected"] else ""
             self.combo_maps.addItem(f"{m['name']}{status_tag}", m)
 
         self._on_map_changed(self.combo_maps.currentIndex())
@@ -167,13 +171,13 @@ class SandboxTab(QWidget):
         is_injected = self.sandbox.is_script_injected(map_info["script_path"])
 
         if is_injected:
-            self.lbl_inject_status.setText("  🟢 TESTMODUS AKTIV: Sandbox-Code ist im Skript aktiv  ")
+            self.lbl_inject_status.setText(t("sandbox_tab.status_active"))
             self.lbl_inject_status.setObjectName("BadgeSuccess")
-            self.btn_inject.setText("🔄 Testmodus aktualisieren")
+            self.btn_inject.setText(t("sandbox_tab.btn_update"))
         else:
-            self.lbl_inject_status.setText("  ⚪ STANDARD: Sauberes Original-Skript (Keine Injektion)  ")
+            self.lbl_inject_status.setText(t("sandbox_tab.status_clean"))
             self.lbl_inject_status.setObjectName("BadgeWarning")
-            self.btn_inject.setText("🧪 Testmodus in Kartenskript injizieren")
+            self.btn_inject.setText(t("sandbox_tab.btn_inject"))
 
         self.lbl_inject_status.style().unpolish(self.lbl_inject_status)
         self.lbl_inject_status.style().polish(self.lbl_inject_status)
@@ -204,14 +208,14 @@ class SandboxTab(QWidget):
 
         try:
             self.sandbox.inject_sandbox_into_script(script_path, opts)
-            msg = f"Testmodus erfolgreich in '{map_info['name']}' injiziert!\n\nStarte das Spiel und wähle die Karte. Du startest sofort als Herzog mit Ressourcen!"
-            self.status_message.emit(f"Sandbox-Injektion erfolgreich auf {map_info['name']}.", "success")
-            QMessageBox.information(self, "Sandbox aktiv", msg)
+            msg = t("sandbox_tab.msg_inject_success").format(name=map_info['name'])
+            self.status_message.emit(t("sandbox_tab.log_inject_success").format(name=map_info['name']), "success")
+            QMessageBox.information(self, t("sandbox_tab.title_active"), msg)
             self.refresh_maps()
         except Exception as e:
-            err = f"Fehler bei Sandbox-Injektion: {e}"
+            err = t("sandbox_tab.msg_inject_error").format(err=e)
             self.status_message.emit(err, "error")
-            QMessageBox.critical(self, "Fehler", err)
+            QMessageBox.critical(self, t("app.error") if t("app.error") != "app.error" else "Error", err)
 
     def _on_remove_sandbox(self):
         idx = self.combo_maps.currentIndex()
@@ -223,11 +227,11 @@ class SandboxTab(QWidget):
 
         try:
             self.sandbox.remove_sandbox_from_script(script_path)
-            msg = f"Testmodus aus '{map_info['name']}' entfernt. Das Skript ist wieder sauber!"
-            self.status_message.emit(f"Sandbox aus {map_info['name']} entfernt.", "warning")
-            QMessageBox.information(self, "Bereinigung abgeschlossen", msg)
+            msg = t("sandbox_tab.msg_remove_success").format(name=map_info['name'])
+            self.status_message.emit(t("sandbox_tab.log_remove_success").format(name=map_info['name']), "warning")
+            QMessageBox.information(self, t("sandbox_tab.title_clean"), msg)
             self.refresh_maps()
         except Exception as e:
-            err = f"Fehler bei Bereinigung: {e}"
+            err = t("sandbox_tab.msg_remove_error").format(err=e)
             self.status_message.emit(err, "error")
-            QMessageBox.critical(self, "Fehler", err)
+            QMessageBox.critical(self, t("app.error") if t("app.error") != "app.error" else "Error", err)

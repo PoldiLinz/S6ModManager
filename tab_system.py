@@ -13,6 +13,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from typing import Dict, List, Any, Optional
 
 from ModManager.engines.system_engine import SystemEngine
+from ModManager.engines import t
 
 
 class SystemTab(QWidget):
@@ -38,21 +39,21 @@ class SystemTab(QWidget):
         info_layout = QGridLayout(info_card)
         info_layout.setContentsMargins(10, 10, 10, 10)
 
-        info_layout.addWidget(QLabel("🎮 Spielverzeichnis:"), 0, 0)
+        info_layout.addWidget(QLabel(t("system_tab.lbl_game_path")), 0, 0)
         self.lbl_game_path = QLabel(self.system.game_path)
         self.lbl_game_path.setObjectName("DimLabel")
         info_layout.addWidget(self.lbl_game_path, 0, 1)
 
-        info_layout.addWidget(QLabel("🛡️ UAC Admin-Status:"), 0, 2)
+        info_layout.addWidget(QLabel(t("system_tab.lbl_admin_status")), 0, 2)
         self.lbl_admin_badge = QLabel()
         info_layout.addWidget(self.lbl_admin_badge, 0, 3)
 
-        info_layout.addWidget(QLabel("📁 UserMaps-Pfad:"), 1, 0)
+        info_layout.addWidget(QLabel(t("system_tab.lbl_usermaps")), 1, 0)
         self.lbl_usermaps_path = QLabel(self.system.user_maps_path)
         self.lbl_usermaps_path.setObjectName("DimLabel")
         info_layout.addWidget(self.lbl_usermaps_path, 1, 1)
 
-        info_layout.addWidget(QLabel("📦 ModLoader Status:"), 1, 2)
+        info_layout.addWidget(QLabel(t("system_tab.lbl_modloader")), 1, 2)
         self.lbl_modloader_badge = QLabel()
         info_layout.addWidget(self.lbl_modloader_badge, 1, 3)
 
@@ -67,65 +68,65 @@ class SystemTab(QWidget):
         v_files = QVBoxLayout(tab_files)
 
         h_fbar = QHBoxLayout()
-        h_fbar.addWidget(QLabel("Liste aller aktiven Dateien in modloader/shr/mod:"))
+        h_fbar.addWidget(QLabel(t("system_tab.lbl_active_files")))
         h_fbar.addStretch()
-        btn_refresh_files = QPushButton("🔄 Neu laden")
+        btn_refresh_files = QPushButton(t("system_tab.btn_reload"))
         btn_refresh_files.clicked.connect(self._refresh_modloader_files)
         h_fbar.addWidget(btn_refresh_files)
         v_files.addLayout(h_fbar)
 
         self.table_mod_files = QTableWidget()
         self.table_mod_files.setColumnCount(4)
-        self.table_mod_files.setHorizontalHeaderLabels(["Kategorie", "Relative Datei", "Größe", "Zuletzt geändert"])
+        self.table_mod_files.setHorizontalHeaderLabels([t("system_tab.col_category"), t("system_tab.col_rel_file"), t("system_tab.col_size"), t("system_tab.col_modified")])
         self.table_mod_files.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         v_files.addWidget(self.table_mod_files)
-        sub_tabs.addTab(tab_files, "📂 Aktive ModLoader-Dateien")
+        sub_tabs.addTab(tab_files, t("system_tab.tab_files"))
 
         # Tab B: S6Patcher Schutz-Dateien
         tab_patcher = QWidget()
         v_patcher = QVBoxLayout(tab_patcher)
 
         h_pbar = QHBoxLayout()
-        h_pbar.addWidget(QLabel("Integritätsüberwachung der unersetzlichen S6Patcher-Basisdateien:"))
+        h_pbar.addWidget(QLabel(t("system_tab.lbl_integrity")))
         h_pbar.addStretch()
-        btn_refresh_patcher = QPushButton("🛡️ Integrität prüfen")
+        btn_refresh_patcher = QPushButton(t("system_tab.btn_check_integrity"))
         btn_refresh_patcher.clicked.connect(self._refresh_patcher_health)
         h_pbar.addWidget(btn_refresh_patcher)
         v_patcher.addLayout(h_pbar)
 
         self.table_patcher = QTableWidget()
         self.table_patcher.setColumnCount(4)
-        self.table_patcher.setHorizontalHeaderLabels(["Status", "Schutzdatei", "Größe", "Vollständiger Pfad"])
+        self.table_patcher.setHorizontalHeaderLabels([t("system_tab.col_status"), t("system_tab.col_prot_file"), t("system_tab.col_size"), t("system_tab.col_full_path")])
         self.table_patcher.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         v_patcher.addWidget(self.table_patcher)
-        sub_tabs.addTab(tab_patcher, "🛡️ S6Patcher Schutz-Status")
+        sub_tabs.addTab(tab_patcher, t("system_tab.tab_patcher"))
 
         # Tab C: Backup & Snapshot Manager
         tab_backups = QWidget()
         v_backups = QVBoxLayout(tab_backups)
 
         h_bbar = QHBoxLayout()
-        btn_new_backup = QPushButton("📦 Neues ModLoader-Backup erstellen")
+        btn_new_backup = QPushButton(t("system_tab.btn_new_backup"))
         btn_new_backup.setObjectName("PrimaryButton")
         btn_new_backup.clicked.connect(self._on_create_backup)
         h_bbar.addWidget(btn_new_backup)
 
-        btn_open_backups = QPushButton("📂 Backup-Ordner öffnen")
+        btn_open_backups = QPushButton(t("system_tab.btn_open_backup"))
         btn_open_backups.clicked.connect(lambda: os.startfile(self.system.backups_path))
         h_bbar.addWidget(btn_open_backups)
 
         h_bbar.addStretch()
-        btn_refresh_b = QPushButton("🔄 Aktualisieren")
+        btn_refresh_b = QPushButton(t("system_tab.btn_refresh"))
         btn_refresh_b.clicked.connect(self._refresh_backups)
         h_bbar.addWidget(btn_refresh_b)
         v_backups.addLayout(h_bbar)
 
         self.table_backups = QTableWidget()
         self.table_backups.setColumnCount(4)
-        self.table_backups.setHorizontalHeaderLabels(["Backup-Archiv", "Größe", "Erstellt am", "Aktionen"])
+        self.table_backups.setHorizontalHeaderLabels([t("system_tab.col_archive"), t("system_tab.col_size"), t("system_tab.col_created"), t("system_tab.col_actions")])
         self.table_backups.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         v_backups.addWidget(self.table_backups)
-        sub_tabs.addTab(tab_backups, "📦 Backups & Snapshots")
+        sub_tabs.addTab(tab_backups, t("system_tab.tab_backups"))
 
         layout.addWidget(sub_tabs)
 
@@ -137,10 +138,10 @@ class SystemTab(QWidget):
         # Admin Status
         is_adm = self.system.is_admin()
         if is_adm:
-            self.lbl_admin_badge.setText("  🟢 Administrator (Vollzugriff)  ")
+            self.lbl_admin_badge.setText(t("system_tab.status_admin"))
             self.lbl_admin_badge.setObjectName("BadgeSuccess")
         else:
-            self.lbl_admin_badge.setText("  🟡 Eingeschränkt (UAC benötigt)  ")
+            self.lbl_admin_badge.setText(t("system_tab.status_limited"))
             self.lbl_admin_badge.setObjectName("BadgeWarning")
         self.lbl_admin_badge.style().unpolish(self.lbl_admin_badge)
         self.lbl_admin_badge.style().polish(self.lbl_admin_badge)
@@ -152,13 +153,13 @@ class SystemTab(QWidget):
     def _refresh_patcher_health(self):
         status, results = self.system.check_s6patcher_integrity()
         if status == "OK":
-            self.lbl_modloader_badge.setText("  🟢 Bereit & Geschützt  ")
+            self.lbl_modloader_badge.setText(t("system_tab.status_ready"))
             self.lbl_modloader_badge.setObjectName("BadgeSuccess")
         elif status == "WARNING":
-            self.lbl_modloader_badge.setText("  🟡 Dateien fehlen teilweise  ")
+            self.lbl_modloader_badge.setText(t("system_tab.status_missing"))
             self.lbl_modloader_badge.setObjectName("BadgeWarning")
         else:
-            self.lbl_modloader_badge.setText("  🔴 S6Patcher nicht installiert  ")
+            self.lbl_modloader_badge.setText(t("system_tab.status_error"))
             self.lbl_modloader_badge.setObjectName("BadgeError")
         self.lbl_modloader_badge.style().unpolish(self.lbl_modloader_badge)
         self.lbl_modloader_badge.style().polish(self.lbl_modloader_badge)
@@ -166,7 +167,7 @@ class SystemTab(QWidget):
         self.table_patcher.setRowCount(len(results))
         for row, item in enumerate(results):
             # Status Badge
-            st_item = QTableWidgetItem("🟢 OK" if item["exists"] else "🔴 FEHLT")
+            st_item = QTableWidgetItem(t("system_tab.status_ok") if item["exists"] else t("system_tab.status_missing_file"))
             st_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.table_patcher.setItem(row, 0, st_item)
 
@@ -184,7 +185,7 @@ class SystemTab(QWidget):
             cat_item = QTableWidgetItem(f["category"])
             self.table_mod_files.setItem(row, 0, cat_item)
 
-            path_text = f["relative_path"] + (" 🔒 [GESCHÜTZT]" if f["is_protected"] else "")
+            path_text = f["relative_path"] + (t("system_tab.protected_tag") if f["is_protected"] else "")
             self.table_mod_files.setItem(row, 1, QTableWidgetItem(path_text))
 
             sz_item = QTableWidgetItem(f["size_str"])
@@ -211,7 +212,7 @@ class SystemTab(QWidget):
             h_act = QHBoxLayout(w_act)
             h_act.setContentsMargins(2, 2, 2, 2)
 
-            btn_rest = QPushButton("🔄 Wiederherstellen")
+            btn_rest = QPushButton(t("system_tab.btn_restore"))
             btn_rest.clicked.connect(lambda _, path=b["full_path"]: self._on_restore_backup(path))
             h_act.addWidget(btn_rest)
 
@@ -223,51 +224,51 @@ class SystemTab(QWidget):
             self.table_backups.setCellWidget(row, 3, w_act)
 
     def _on_create_backup(self):
-        name, ok = QInputDialog.getText(self, "Backup erstellen", "Name des Backups (optional):")
+        name, ok = QInputDialog.getText(self, t("system_tab.title_create_backup"), t("system_tab.lbl_backup_name"))
         if ok:
             try:
                 b_name = name.strip() if name.strip() else None
                 zip_path = self.system.create_modloader_backup(b_name)
-                msg = f"ModLoader-Backup erfolgreich erstellt:\n{os.path.basename(zip_path)}"
-                self.status_message.emit(f"Backup {os.path.basename(zip_path)} gespeichert.", "success")
-                QMessageBox.information(self, "Backup erstellt", msg)
+                msg = t("system_tab.msg_backup_success").format(name=os.path.basename(zip_path))
+                self.status_message.emit(t("system_tab.log_backup_success").format(name=os.path.basename(zip_path)), "success")
+                QMessageBox.information(self, t("system_tab.title_backup_created"), msg)
                 self._refresh_backups()
             except Exception as e:
-                err = f"Fehler bei Backup-Erstellung: {e}"
+                err = t("system_tab.msg_backup_error").format(err=e)
                 self.status_message.emit(err, "error")
-                QMessageBox.critical(self, "Fehler", err)
+                QMessageBox.critical(self, t("app.error") if t("app.error") != "app.error" else "Error", err)
 
     def _on_restore_backup(self, zip_path: str):
         reply = QMessageBox.question(
             self,
-            "Backup wiederherstellen",
-            f"Möchtest du den ModLoader-Zustand aus folgendem Backup wiederherstellen?\n\n{os.path.basename(zip_path)}\n\nGeschützte S6Patcher-Dateien bleiben dabei sicher erhalten.",
+            t("system_tab.title_restore_backup"),
+            t("system_tab.msg_restore_prompt").format(name=os.path.basename(zip_path)),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply == QMessageBox.StandardButton.Yes:
             try:
                 count = self.system.restore_modloader_backup(zip_path)
-                msg = f"{count} Dateien aus Backup erfolgreich wiederhergestellt!"
+                msg = t("system_tab.msg_restore_success").format(count=count)
                 self.status_message.emit(msg, "success")
-                QMessageBox.information(self, "Backup wiederhergestellt", msg)
+                QMessageBox.information(self, t("system_tab.title_backup_restored"), msg)
                 self.refresh_all()
             except Exception as e:
-                err = f"Fehler bei Wiederherstellung: {e}"
+                err = t("system_tab.msg_restore_error").format(err=e)
                 self.status_message.emit(err, "error")
-                QMessageBox.critical(self, "Fehler", err)
+                QMessageBox.critical(self, t("app.error") if t("app.error") != "app.error" else "Error", err)
 
     def _on_delete_backup(self, zip_path: str):
         reply = QMessageBox.question(
             self,
-            "Backup löschen",
-            f"Möchtest du das Backup '{os.path.basename(zip_path)}' wirklich löschen?",
+            t("system_tab.title_delete_backup"),
+            t("system_tab.msg_delete_prompt").format(name=os.path.basename(zip_path)),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply == QMessageBox.StandardButton.Yes:
             try:
                 if os.path.exists(zip_path):
                     os.remove(zip_path)
-                self.status_message.emit("Backup gelöscht.", "warning")
+                self.status_message.emit(t("system_tab.log_backup_deleted"), "warning")
                 self._refresh_backups()
             except Exception as e:
-                QMessageBox.critical(self, "Fehler", str(e))
+                QMessageBox.critical(self, t("app.error") if t("app.error") != "app.error" else "Error", str(e))
