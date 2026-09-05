@@ -88,12 +88,11 @@ class SandboxTab(QWidget):
         l_map.addWidget(self.lbl_inject_status)
         self.right_layout.addWidget(card_map)
 
-        # -- 2. Sandbox-Optionen (Konfigurator)
+        # -- 2. PRESET BAR
         card_opts = QFrame()
         card_opts.setObjectName("CardFrame")
         l_opts = QVBoxLayout(card_opts)
         
-        # PRESET DROPDOWN
         h_preset = QHBoxLayout()
         h_preset.addWidget(QLabel(t("sandbox_tab.lbl_preset")))
         self.combo_preset = QComboBox()
@@ -104,42 +103,63 @@ class SandboxTab(QWidget):
         h_preset.addWidget(self.combo_preset, 1)
         l_opts.addLayout(h_preset)
 
-        # GROUP: Title & Buildings
+        from PyQt6.QtWidgets import QTabWidget
+        self.sub_tabs = QTabWidget()
+        self.sub_tabs.setObjectName("SubTabWidget")
+
+        # TAB 1: Player & Buildings
+        tab_build = QWidget()
+        tab_build_layout = QVBoxLayout(tab_build)
         grp_build = QGroupBox(t("sandbox_tab.grp_buildings"))
         grid_build = QGridLayout(grp_build)
         
+        self.combo_player = QComboBox()
+        self.combo_player.addItem("Map Default (No Overwrite)", 1)
+        self.combo_player.addItem("Marcus", "Marcus")
+        self.combo_player.addItem("Alandra", "Alandra")
+        self.combo_player.addItem("Kestral", "Kestral")
+        self.combo_player.addItem("Hakim", "Hakim")
+        self.combo_player.addItem("Thordal", "Thordal")
+        self.combo_player.addItem("Elias", "Elias")
+
         self.combo_title = QComboBox()
         for i, text in enumerate([t("sandbox_tab.title_knight"), t("sandbox_tab.title_sheriff"), 
                                   t("sandbox_tab.title_baron"), t("sandbox_tab.title_earl"), 
                                   t("sandbox_tab.title_marquis"), t("sandbox_tab.title_duke")], 1):
             self.combo_title.addItem(text, i)
         
-        self.combo_castle = QComboBox()
         self.combo_storehouse = QComboBox()
+        self.combo_castle = QComboBox()
         self.combo_church = QComboBox()
-        for cb in [self.combo_castle, self.combo_storehouse, self.combo_church]:
+        for cb in [self.combo_storehouse, self.combo_castle, self.combo_church]:
             for i, text in enumerate([t("sandbox_tab.level_1"), t("sandbox_tab.level_2"), 
                                       t("sandbox_tab.level_3"), t("sandbox_tab.level_4")], 1):
                 cb.addItem(text, i)
         
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_title")), 0, 0)
-        grid_build.addWidget(self.combo_title, 0, 1)
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_castle")), 0, 2)
-        grid_build.addWidget(self.combo_castle, 0, 3)
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_storehouse")), 1, 0)
-        grid_build.addWidget(self.combo_storehouse, 1, 1)
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_church")), 1, 2)
-        grid_build.addWidget(self.combo_church, 1, 3)
+        # Col 1
+        grid_build.addWidget(QLabel("Overwrite Player Knight:"), 0, 0)
+        grid_build.addWidget(self.combo_player, 0, 1)
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_title")), 1, 0)
+        grid_build.addWidget(self.combo_title, 1, 1)
+
+        # Col 2
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_church")), 0, 2)
+        grid_build.addWidget(self.combo_church, 0, 3)
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_storehouse")), 1, 2)
+        grid_build.addWidget(self.combo_storehouse, 1, 3)
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_castle")), 2, 2)
+        grid_build.addWidget(self.combo_castle, 2, 3)
         
-        for cb in [self.combo_title, self.combo_castle, self.combo_storehouse, self.combo_church]:
+        for cb in [self.combo_player, self.combo_title, self.combo_castle, self.combo_storehouse, self.combo_church]:
             cb.currentIndexChanged.connect(self._update_lua_preview)
             
-        l_opts.addWidget(grp_build)
+        tab_build_layout.addWidget(grp_build)
+        tab_build_layout.addStretch()
+        self.sub_tabs.addTab(tab_build, "Titel & Gebäude")
 
-        # HBOX FOR TABLES
-        h_tables = QHBoxLayout()
-
-        # GROUP: Resources
+        # TAB 2: Resources
+        tab_res = QWidget()
+        tab_res_layout = QVBoxLayout(tab_res)
         grp_res = QGroupBox(t("sandbox_tab.grp_resources"))
         v_res = QVBoxLayout(grp_res)
         self.table_res = QTableWidget(0, 4)
@@ -154,9 +174,12 @@ class SandboxTab(QWidget):
         self._add_res_row("G_Honeycomb", t("sandbox_tab.res_clean"), 0)
         self._add_res_row("G_Herb", t("sandbox_tab.res_medicine"), 0)
         v_res.addWidget(self.table_res)
-        h_tables.addWidget(grp_res)
+        tab_res_layout.addWidget(grp_res)
+        self.sub_tabs.addTab(tab_res, "Start-Rohstoffe")
 
-        # GROUP: Troops
+        # TAB 3: Troops
+        tab_troops = QWidget()
+        tab_troops_layout = QVBoxLayout(tab_troops)
         grp_troops = QGroupBox(t("sandbox_tab.grp_troops"))
         v_troops = QVBoxLayout(grp_troops)
         self.table_troops = QTableWidget(0, 4)
@@ -167,11 +190,12 @@ class SandboxTab(QWidget):
         self._add_troop_row("U_CatapultCart", t("sandbox_tab.troop_siege"), 0)
         self._add_troop_row("U_Thief", t("sandbox_tab.troop_thief"), 0)
         v_troops.addWidget(self.table_troops)
-        h_tables.addWidget(grp_troops)
+        tab_troops_layout.addWidget(grp_troops)
+        self.sub_tabs.addTab(tab_troops, "Start-Truppen")
 
-        l_opts.addLayout(h_tables)
+        l_opts.addWidget(self.sub_tabs)
 
-        # GROUP: Globals
+        # GROUP: Globals (always visible below tabs)
         grp_glob = QGroupBox(t("sandbox_tab.grp_global"))
         h_glob = QHBoxLayout(grp_glob)
         self.chk_fog = QCheckBox(t("sandbox_tab.chk_fog"))
@@ -233,6 +257,7 @@ class SandboxTab(QWidget):
         table.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
         table.setShowGrid(False)
         table.setAlternatingRowColors(True)
+        table.setStyleSheet("QTableWidget::item:hover { background-color: transparent; }")
         
         header = table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -273,9 +298,10 @@ class SandboxTab(QWidget):
         item_van.setForeground(QColor("#94a3b8"))
         table.setItem(row, 2, item_van)
         
-        btn_reset = QPushButton("⟲")
+        btn_reset = QPushButton("↺")
         btn_reset.setToolTip("Reset to Vanilla")
         btn_reset.setFixedSize(24, 24)
+        btn_reset.setStyleSheet("background-color: transparent; border: 1px solid #465066; color: #cbd5e1; border-radius: 4px; font-weight: bold;")
         btn_reset.clicked.connect(lambda _, s=sb, v=vanilla_val: s.setValue(v))
         table.setCellWidget(row, 3, btn_reset)
 
@@ -293,6 +319,7 @@ class SandboxTab(QWidget):
         self.chk_vic.blockSignals(True)
 
         # Reset alle
+        self.combo_player.setCurrentIndex(0)
         self.combo_title.setCurrentIndex(0)
         self.combo_castle.setCurrentIndex(0)
         self.combo_storehouse.setCurrentIndex(0)
@@ -373,6 +400,7 @@ class SandboxTab(QWidget):
 
     def _build_options_dict(self) -> Dict[str, Any]:
         options = {
+            "overwrite_knight": self.combo_player.currentData(),
             "title_level": self.combo_title.currentData() or (self.combo_title.currentIndex() + 1),
             "b_castle": self.combo_castle.currentIndex() + 1,
             "b_storehouse": self.combo_storehouse.currentIndex() + 1,
