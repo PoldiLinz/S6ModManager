@@ -17,6 +17,7 @@ from typing import Dict, Any, Optional
 
 from ModManager.engines.config_engine import ConfigEngine
 from ModManager.engines.system_engine import SystemEngine
+from ModManager.engines import t
 
 
 # Vanilla-Referenzwerte für Die Siedler: Aufstieg eines Königreichs
@@ -81,7 +82,7 @@ class ConfigTab(QWidget):
         # Single Source of Truth: Die tatsächlichen XML-Dateien im ModLoader scannen
         active_config = self.config_engine.read_active_config_from_modloader()
         self._apply_data_to_widgets(active_config)
-        self.status_message.emit("Aktive ModLoader-Konfiguration geladen.", "info")
+        self.status_message.emit(t("config_tab.msg_config_loaded"), "info")
 
     def _init_ui(self):
         main_layout = QVBoxLayout(self)
@@ -95,7 +96,7 @@ class ConfigTab(QWidget):
         top_layout.setContentsMargins(12, 10, 12, 10)
         top_layout.setSpacing(10)
 
-        lbl_preset = QLabel("Preset-Profil:")
+        lbl_preset = QLabel(t("config_tab.lbl_preset"))
         lbl_preset.setStyleSheet("font-weight: bold;")
         top_layout.addWidget(lbl_preset)
 
@@ -105,18 +106,18 @@ class ConfigTab(QWidget):
         self.preset_combo.currentIndexChanged.connect(self._on_preset_changed)
         top_layout.addWidget(self.preset_combo)
 
-        btn_save_preset = QPushButton("💾 Als Preset sichern")
+        btn_save_preset = QPushButton(t("config_tab.btn_save_preset"))
         btn_save_preset.clicked.connect(self._on_save_preset)
         top_layout.addWidget(btn_save_preset)
 
         top_layout.addStretch()
 
-        btn_restore_vanilla = QPushButton("🔄 Vanilla wiederherstellen")
+        btn_restore_vanilla = QPushButton(t("config_tab.btn_restore_vanilla"))
         btn_restore_vanilla.setObjectName("DangerButton")
         btn_restore_vanilla.clicked.connect(self._on_restore_vanilla)
         top_layout.addWidget(btn_restore_vanilla)
 
-        btn_apply = QPushButton("🚀 Konfiguration anwenden")
+        btn_apply = QPushButton(t("config_tab.btn_apply"))
         btn_apply.setObjectName("PrimaryButton")
         btn_apply.clicked.connect(self._on_apply_config)
         top_layout.addWidget(btn_apply)
@@ -127,9 +128,9 @@ class ConfigTab(QWidget):
         self.sub_tabs = QTabWidget()
         self.sub_tabs.setObjectName("SubTabWidget")
 
-        self.sub_tabs.addTab(self._create_main_buildings_tab(), "🏛️ Hauptgebäude & Siedlerlimit")
-        self.sub_tabs.addTab(self._create_economy_tab(), "⛏️ Wirtschaft & Ressourcen")
-        self.sub_tabs.addTab(self._create_military_tab(), "⚔️ Militär & Verteidigung")
+        self.sub_tabs.addTab(self._create_main_buildings_tab(), t("config_tab.tab_buildings"))
+        self.sub_tabs.addTab(self._create_economy_tab(), t("config_tab.tab_economy"))
+        self.sub_tabs.addTab(self._create_military_tab(), t("config_tab.tab_military"))
 
         main_layout.addWidget(self.sub_tabs)
 
@@ -148,19 +149,19 @@ class ConfigTab(QWidget):
             grid.setColumnStretch(col, 0)
         grid.setColumnStretch(4, 1)
 
-        lbl_mod = QLabel("Modded Value")
+        lbl_mod = QLabel(t("config_tab.lbl_modded"))
         lbl_mod.setObjectName("DimLabel")
         lbl_mod.setStyleSheet("font-weight: bold; color: #aaaaaa; font-size: 11px;")
         lbl_mod.setAlignment(Qt.AlignmentFlag.AlignCenter)
         grid.addWidget(lbl_mod, 0, 1)
 
-        lbl_van = QLabel("Vanilla Value")
+        lbl_van = QLabel(t("config_tab.lbl_vanilla"))
         lbl_van.setObjectName("DimLabel")
         lbl_van.setStyleSheet("font-weight: bold; color: #aaaaaa; font-size: 11px;")
         lbl_van.setAlignment(Qt.AlignmentFlag.AlignCenter)
         grid.addWidget(lbl_van, 0, 2)
 
-        lbl_rev = QLabel("Reset")
+        lbl_rev = QLabel(t("config_tab.lbl_reset"))
         lbl_rev.setObjectName("DimLabel")
         lbl_rev.setStyleSheet("font-weight: bold; color: #aaaaaa; font-size: 11px;")
         lbl_rev.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -193,7 +194,7 @@ class ConfigTab(QWidget):
         val_str = f"{vanilla_val:g}" if isinstance(vanilla_val, float) else str(vanilla_val)
         lbl_vanilla = QLabel(val_str)
         lbl_vanilla.setObjectName("VanillaBadge")
-        lbl_vanilla.setToolTip(f"Originaler Ubisoft-Standardwert: {val_str}")
+        lbl_vanilla.setToolTip(t("config_tab.tt_vanilla_badge").format(val_str=val_str))
         lbl_vanilla.setFixedWidth(value_width)
         lbl_vanilla.setAlignment(Qt.AlignmentFlag.AlignCenter)
         grid.addWidget(lbl_vanilla, row, col_offset + 2)
@@ -201,7 +202,7 @@ class ConfigTab(QWidget):
         # Spalte col_offset + 3: Lightroom Revert-Button
         btn_revert = QPushButton("↺")
         btn_revert.setObjectName("RevertBtn")
-        btn_revert.setToolTip(f"Auf Vanilla-Wert zurücksetzen ({val_str})")
+        btn_revert.setToolTip(t("config_tab.tt_revert_btn").format(val_str=val_str))
         btn_revert.setFixedSize(28, 24)
         btn_revert.setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -255,84 +256,84 @@ class ConfigTab(QWidget):
         layout.setContentsMargins(6, 6, 6, 6)
 
         # A. Siedlerlimit
-        box_settlers = QGroupBox("Globales Siedlerlimit (Kathedralen-Ausbaustufen)")
+        box_settlers = QGroupBox(t("config_tab.group_settlers"))
         g_settlers = self._setup_grid(box_settlers)
 
         self.spin_settler_1 = self._create_spin(50, 2000, 100, 10)
-        self.btn_revert_settler_1 = self._add_setting_item(g_settlers, 0, 0, "Ohne / Kathedrale Stufe 1:", self.spin_settler_1, VANILLA_DEFAULTS["settler_1"])
+        self.btn_revert_settler_1 = self._add_setting_item(g_settlers, 0, 0, t("config_tab.settler_1"), self.spin_settler_1, VANILLA_DEFAULTS["settler_1"])
 
         self.spin_settler_2 = self._create_spin(50, 3000, 300, 25)
-        self._add_setting_item(g_settlers, 1, 0, "Kathedrale Stufe 2:", self.spin_settler_2, VANILLA_DEFAULTS["settler_2"])
+        self._add_setting_item(g_settlers, 1, 0, t("config_tab.settler_2"), self.spin_settler_2, VANILLA_DEFAULTS["settler_2"])
 
         self.spin_settler_3 = self._create_spin(50, 4000, 500, 50)
-        self._add_setting_item(g_settlers, 2, 0, "Kathedrale Stufe 3:", self.spin_settler_3, VANILLA_DEFAULTS["settler_3"])
+        self._add_setting_item(g_settlers, 2, 0, t("config_tab.settler_3"), self.spin_settler_3, VANILLA_DEFAULTS["settler_3"])
 
         self.spin_settler_4 = self._create_spin(50, 5000, 800, 100)
-        self._add_setting_item(g_settlers, 3, 0, "Kathedrale Stufe 4 (Max):", self.spin_settler_4, VANILLA_DEFAULTS["settler_4"])
+        self._add_setting_item(g_settlers, 3, 0, t("config_tab.settler_4"), self.spin_settler_4, VANILLA_DEFAULTS["settler_4"])
 
-        lbl_settler_info = QLabel("Hinweis: In Vanilla beträgt das absolute Limit bei Stufe 4 genau 200 Siedler.")
+        lbl_settler_info = QLabel(t("config_tab.settler_hint"))
         lbl_settler_info.setObjectName("DimLabel")
         g_settlers.addWidget(lbl_settler_info, 5, 0, 1, 5)
 
         layout.addWidget(box_settlers)
 
         # B. Lagerhaus
-        box_store = QGroupBox("Lagerhaus (Kapazitäten, Warenstapel & Ausbau)")
+        box_store = QGroupBox(t("config_tab.group_storehouse"))
         g_store = self._setup_grid(box_store)
 
         self.spin_store_1 = self._create_spin(10, 5000, 54, 10)
-        self._add_setting_item(g_store, 0, 0, "Lagerhaus Stufe 1:", self.spin_store_1, VANILLA_DEFAULTS["store_1"])
+        self._add_setting_item(g_store, 0, 0, t("config_tab.store_1"), self.spin_store_1, VANILLA_DEFAULTS["store_1"])
 
         self.spin_store_2 = self._create_spin(10, 5000, 250, 50)
-        self._add_setting_item(g_store, 1, 0, "Lagerhaus Stufe 2:", self.spin_store_2, VANILLA_DEFAULTS["store_2"])
+        self._add_setting_item(g_store, 1, 0, t("config_tab.store_2"), self.spin_store_2, VANILLA_DEFAULTS["store_2"])
 
         self.spin_store_3 = self._create_spin(10, 5000, 500, 50)
-        self._add_setting_item(g_store, 2, 0, "Lagerhaus Stufe 3:", self.spin_store_3, VANILLA_DEFAULTS["store_3"])
+        self._add_setting_item(g_store, 2, 0, t("config_tab.store_3"), self.spin_store_3, VANILLA_DEFAULTS["store_3"])
 
         self.spin_store_4 = self._create_spin(10, 5000, 1000, 100)
-        self._add_setting_item(g_store, 3, 0, "Lagerhaus Stufe 4:", self.spin_store_4, VANILLA_DEFAULTS["store_4"])
+        self._add_setting_item(g_store, 3, 0, t("config_tab.store_4"), self.spin_store_4, VANILLA_DEFAULTS["store_4"])
 
         self.spin_store_max = self._create_spin(10, 500, 60, 5)
-        self._add_setting_item(g_store, 4, 0, "Warenstapel-Limit (MaxAmount):", self.spin_store_max, VANILLA_DEFAULTS["store_max"])
+        self._add_setting_item(g_store, 4, 0, t("config_tab.store_max"), self.spin_store_max, VANILLA_DEFAULTS["store_max"])
 
         self.spin_store_gold = self._create_spin(0, 5000, 250, 50)
-        self._add_setting_item(g_store, 5, 0, "Goldkosten Stufe 4 Upgrade:", self.spin_store_gold, VANILLA_DEFAULTS["store_gold"])
+        self._add_setting_item(g_store, 5, 0, t("config_tab.store_gold"), self.spin_store_gold, VANILLA_DEFAULTS["store_gold"])
 
         layout.addWidget(box_store)
 
         # C. Burg / Schloss
-        box_castle = QGroupBox("Burg & Schloss (Soldaten, Schatzkammer & Trefferpunkte)")
+        box_castle = QGroupBox(t("config_tab.group_castle"))
         g_castle = self._setup_grid(box_castle)
 
         self.spin_castle_soldier_1 = self._create_spin(5, 500, 30, 5)
-        self._add_setting_item(g_castle, 0, 0, "Soldatenkontingent Stufe 1:", self.spin_castle_soldier_1, VANILLA_DEFAULTS["castle_soldier_1"])
+        self._add_setting_item(g_castle, 0, 0, t("config_tab.castle_soldier_1"), self.spin_castle_soldier_1, VANILLA_DEFAULTS["castle_soldier_1"])
 
         self.spin_castle_soldier_2 = self._create_spin(5, 500, 55, 5)
-        self._add_setting_item(g_castle, 1, 0, "Soldatenkontingent Stufe 2:", self.spin_castle_soldier_2, VANILLA_DEFAULTS["castle_soldier_2"])
+        self._add_setting_item(g_castle, 1, 0, t("config_tab.castle_soldier_2"), self.spin_castle_soldier_2, VANILLA_DEFAULTS["castle_soldier_2"])
 
         self.spin_castle_soldier_3 = self._create_spin(5, 500, 85, 5)
-        self._add_setting_item(g_castle, 2, 0, "Soldatenkontingent Stufe 3:", self.spin_castle_soldier_3, VANILLA_DEFAULTS["castle_soldier_3"])
+        self._add_setting_item(g_castle, 2, 0, t("config_tab.castle_soldier_3"), self.spin_castle_soldier_3, VANILLA_DEFAULTS["castle_soldier_3"])
 
         self.spin_castle_soldier_4 = self._create_spin(5, 500, 130, 10)
-        self._add_setting_item(g_castle, 3, 0, "Soldatenkontingent Stufe 4:", self.spin_castle_soldier_4, VANILLA_DEFAULTS["castle_soldier_4"])
+        self._add_setting_item(g_castle, 3, 0, t("config_tab.castle_soldier_4"), self.spin_castle_soldier_4, VANILLA_DEFAULTS["castle_soldier_4"])
 
         self.spin_castle_treasury = self._create_spin(5000, 99000, 99000, 5000)
-        self._add_setting_item(g_castle, 4, 0, "Schatzkammer Gold (Stufe 4):", self.spin_castle_treasury, VANILLA_DEFAULTS["castle_treasury"])
+        self._add_setting_item(g_castle, 4, 0, t("config_tab.castle_treasury"), self.spin_castle_treasury, VANILLA_DEFAULTS["castle_treasury"])
 
         self.spin_castle_hp = self._create_spin(500, 20000, 5000, 500)
-        self._add_setting_item(g_castle, 5, 0, "Burg Trefferpunkte (HP Stufe 4):", self.spin_castle_hp, VANILLA_DEFAULTS["castle_hp"])
+        self._add_setting_item(g_castle, 5, 0, t("config_tab.castle_hp"), self.spin_castle_hp, VANILLA_DEFAULTS["castle_hp"])
 
         layout.addWidget(box_castle)
 
         # D. Kathedrale
-        box_cath = QGroupBox("Kathedrale (Predigt-Besucher & Prestige)")
+        box_cath = QGroupBox(t("config_tab.group_cathedral"))
         g_cath = self._setup_grid(box_cath)
 
         self.spin_cath_sermon = self._create_spin(10, 500, 120, 10)
-        self._add_setting_item(g_cath, 0, 0, "Predigt-Besucher Stufe 4:", self.spin_cath_sermon, VANILLA_DEFAULTS["cath_sermon"])
+        self._add_setting_item(g_cath, 0, 0, t("config_tab.cath_sermon"), self.spin_cath_sermon, VANILLA_DEFAULTS["cath_sermon"])
 
         self.spin_cath_prestige = self._create_spin(50, 2000, 500, 50)
-        self._add_setting_item(g_cath, 1, 0, "Prestige-Punkte Stufe 4:", self.spin_cath_prestige, VANILLA_DEFAULTS["cath_prestige"])
+        self._add_setting_item(g_cath, 1, 0, t("config_tab.cath_prestige"), self.spin_cath_prestige, VANILLA_DEFAULTS["cath_prestige"])
 
         layout.addWidget(box_cath)
         layout.addStretch()
@@ -355,40 +356,40 @@ class ConfigTab(QWidget):
         layout.setContentsMargins(6, 6, 6, 6)
 
         # A. Rohstoff-Minen
-        box_mines = QGroupBox("Rohstoffvorkommen & Minen (Steinbruch & Eisenmine)")
+        box_mines = QGroupBox(t("config_tab.group_mines"))
         g_mines = self._setup_grid(box_mines)
 
         self.spin_mine_stone = self._create_spin(250, 999999, 999999, 1000)
-        self._add_setting_item(g_mines, 0, 0, "Steinbruch-Kapazität:", self.spin_mine_stone, VANILLA_DEFAULTS["mine_stone"])
+        self._add_setting_item(g_mines, 0, 0, t("config_tab.mine_stone"), self.spin_mine_stone, VANILLA_DEFAULTS["mine_stone"])
 
         self.spin_mine_iron = self._create_spin(250, 999999, 999999, 1000)
-        self._add_setting_item(g_mines, 1, 0, "Eisenmine-Kapazität:", self.spin_mine_iron, VANILLA_DEFAULTS["mine_iron"])
+        self._add_setting_item(g_mines, 1, 0, t("config_tab.mine_iron"), self.spin_mine_iron, VANILLA_DEFAULTS["mine_iron"])
         layout.addWidget(box_mines)
 
         # B. Brunnen & Löschwasser
-        box_well = QGroupBox("Brunnen & Löschwasser")
+        box_well = QGroupBox(t("config_tab.group_well"))
         g_well = self._setup_grid(box_well)
 
         self.spin_well_refill = self._create_double_spin(0.1, 10.0, 1.5, 0.1, 1)
-        self._add_setting_item(g_well, 0, 0, "Wassernachfüllung (Einheiten/Sek):", self.spin_well_refill, VANILLA_DEFAULTS["well_refill"])
+        self._add_setting_item(g_well, 0, 0, t("config_tab.well_refill"), self.spin_well_refill, VANILLA_DEFAULTS["well_refill"])
 
         self.spin_well_cap = self._create_spin(25, 1000, 200, 25)
-        self._add_setting_item(g_well, 1, 0, "Wasservorrat Stufe 4:", self.spin_well_cap, VANILLA_DEFAULTS["well_cap"])
+        self._add_setting_item(g_well, 1, 0, t("config_tab.well_cap"), self.spin_well_cap, VANILLA_DEFAULTS["well_cap"])
 
         layout.addWidget(box_well)
 
         # C. Straßen & Logistik
-        box_logistics = QGroupBox("Straßen & Transportlogistik")
+        box_logistics = QGroupBox(t("config_tab.group_logistics"))
         g_log = self._setup_grid(box_logistics)
 
         self.spin_road_speed = self._create_double_spin(1.0, 3.0, 1.4, 0.05, 2)
-        self._add_setting_item(g_log, 0, 0, "Straßen-Geschwindigkeitsbonus:", self.spin_road_speed, VANILLA_DEFAULTS["road_speed"])
+        self._add_setting_item(g_log, 0, 0, t("config_tab.road_speed"), self.spin_road_speed, VANILLA_DEFAULTS["road_speed"])
 
         self.spin_cart_speed = self._create_spin(200, 1000, 400, 20)
-        self._add_setting_item(g_log, 1, 0, "Karren-Geschwindigkeit:", self.spin_cart_speed, VANILLA_DEFAULTS["cart_speed"])
+        self._add_setting_item(g_log, 1, 0, t("config_tab.cart_speed"), self.spin_cart_speed, VANILLA_DEFAULTS["cart_speed"])
 
         self.spin_workshop_cap = self._create_spin(9, 100, 18, 3)
-        self._add_setting_item(g_log, 2, 0, "Betriebs-Warenpuffer:", self.spin_workshop_cap, VANILLA_DEFAULTS["workshop_cap"])
+        self._add_setting_item(g_log, 2, 0, t("config_tab.workshop_cap"), self.spin_workshop_cap, VANILLA_DEFAULTS["workshop_cap"])
 
         layout.addWidget(box_logistics)
         layout.addStretch()
@@ -411,10 +412,10 @@ class ConfigTab(QWidget):
         layout.setContentsMargins(6, 6, 6, 6)
 
         # A. Bataillonsgröße
-        box_bat = QGroupBox("Bataillonsgröße (Kaserne & Bogner)")
+        box_bat = QGroupBox(t("config_tab.group_battalion"))
         g_bat = self._setup_grid(box_bat)
 
-        lbl_bat = QLabel("Soldaten pro Bataillon:")
+        lbl_bat = QLabel(t("config_tab.lbl_bat_size"))
         lbl_bat.setMinimumWidth(240)
         g_bat.addWidget(lbl_bat, 1, 0)
 
@@ -422,9 +423,9 @@ class ConfigTab(QWidget):
         h_bat.setSpacing(10)
         self.btn_group_bat = QButtonGroup(self)
 
-        self.radio_bat_6 = QRadioButton("6 (Vanilla)")
-        self.radio_bat_9 = QRadioButton("9 (Empfohlen)")
-        self.radio_bat_12 = QRadioButton("12 (Großschlacht)")
+        self.radio_bat_6 = QRadioButton(t("config_tab.bat_6"))
+        self.radio_bat_9 = QRadioButton(t("config_tab.bat_9"))
+        self.radio_bat_12 = QRadioButton(t("config_tab.bat_12"))
 
         self.btn_group_bat.addButton(self.radio_bat_6, 6)
         self.btn_group_bat.addButton(self.radio_bat_9, 9)
@@ -441,14 +442,14 @@ class ConfigTab(QWidget):
 
         lbl_van_bat = QLabel("6")
         lbl_van_bat.setObjectName("VanillaBadge")
-        lbl_van_bat.setToolTip("Originaler Ubisoft-Standardwert: 6 Soldaten pro Bataillon")
+        lbl_van_bat.setToolTip(t("config_tab.tt_van_bat"))
         lbl_van_bat.setFixedWidth(140)
         lbl_van_bat.setAlignment(Qt.AlignmentFlag.AlignCenter)
         g_bat.addWidget(lbl_van_bat, 1, 2)
 
         btn_rev_bat = QPushButton("↺")
         btn_rev_bat.setObjectName("RevertBtn")
-        btn_rev_bat.setToolTip("Auf Vanilla zurücksetzen (6 Soldaten)")
+        btn_rev_bat.setToolTip(t("config_tab.tt_rev_bat"))
         btn_rev_bat.setFixedSize(28, 24)
         btn_rev_bat.setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -466,29 +467,29 @@ class ConfigTab(QWidget):
         layout.addWidget(box_bat)
 
         # B. Mauern & Befestigung
-        box_walls = QGroupBox("Stadtmauern, Stadttore & Wehrtürme")
+        box_walls = QGroupBox(t("config_tab.group_walls"))
         g_walls = self._setup_grid(box_walls)
 
         self.spin_wall_gate = self._create_spin(500, 20000, 3000, 250)
-        self._add_setting_item(g_walls, 0, 0, "Stadttore Trefferpunkte (HP):", self.spin_wall_gate, VANILLA_DEFAULTS["wall_gate"])
+        self._add_setting_item(g_walls, 0, 0, t("config_tab.wall_gate"), self.spin_wall_gate, VANILLA_DEFAULTS["wall_gate"])
 
         self.spin_wall_turret = self._create_spin(500, 20000, 2500, 250)
-        self._add_setting_item(g_walls, 1, 0, "Wehrtürme Trefferpunkte (HP):", self.spin_wall_turret, VANILLA_DEFAULTS["wall_turret"])
+        self._add_setting_item(g_walls, 1, 0, t("config_tab.wall_turret"), self.spin_wall_turret, VANILLA_DEFAULTS["wall_turret"])
 
         self.spin_wall_segment = self._create_spin(500, 20000, 2000, 200)
-        self._add_setting_item(g_walls, 2, 0, "Mauersegmente Trefferpunkte (HP):", self.spin_wall_segment, VANILLA_DEFAULTS["wall_segment"])
+        self._add_setting_item(g_walls, 2, 0, t("config_tab.wall_segment"), self.spin_wall_segment, VANILLA_DEFAULTS["wall_segment"])
 
         layout.addWidget(box_walls)
 
         # C. Soldaten
-        box_units = QGroupBox("Soldaten-Attribute (Schwertkämpfer & Bogenschützen)")
+        box_units = QGroupBox(t("config_tab.group_units"))
         g_units = self._setup_grid(box_units)
 
         self.spin_soldier_speed = self._create_spin(300, 1000, 540, 20)
-        self._add_setting_item(g_units, 0, 0, "Marschgeschwindigkeit:", self.spin_soldier_speed, VANILLA_DEFAULTS["soldier_speed"])
+        self._add_setting_item(g_units, 0, 0, t("config_tab.soldier_speed"), self.spin_soldier_speed, VANILLA_DEFAULTS["soldier_speed"])
 
         self.spin_soldier_hp = self._create_spin(50, 1000, 160, 10)
-        self._add_setting_item(g_units, 1, 0, "Lebenspunkte (HP):", self.spin_soldier_hp, VANILLA_DEFAULTS["soldier_hp"])
+        self._add_setting_item(g_units, 1, 0, t("config_tab.soldier_hp"), self.spin_soldier_hp, VANILLA_DEFAULTS["soldier_hp"])
 
         layout.addWidget(box_units)
         layout.addStretch()
@@ -522,9 +523,9 @@ class ConfigTab(QWidget):
         try:
             data = self.config_engine.load_preset(filename)
             self._apply_data_to_widgets(data)
-            self.status_message.emit(f"Preset '{data.get('name', filename)}' geladen.", "info")
+            self.status_message.emit(t("config_tab.msg_preset_loaded").format(name=data.get('name', filename)), "info")
         except Exception as e:
-            self.status_message.emit(f"Fehler beim Laden des Presets: {e}", "error")
+            self.status_message.emit(t("config_tab.msg_preset_load_err").format(err=e), "error")
 
     def _apply_data_to_widgets(self, data: Dict[str, Any]):
         # Settler limits
@@ -667,19 +668,19 @@ class ConfigTab(QWidget):
         try:
             config = self._collect_data_from_widgets()
             count = self.config_engine.apply_config_to_modloader(config)
-            msg = f"Erfolg: {count} XML-Dateien wurden im ModLoader angewendet!"
+            msg = t("config_tab.msg_config_applied").format(count=count)
             self.status_message.emit(msg, "success")
-            QMessageBox.information(self, "Konfiguration angewendet", msg)
+            QMessageBox.information(self, t("config_tab.btn_apply"), msg)
         except Exception as e:
-            err = f"Fehler beim Anwenden der Konfiguration: {e}"
+            err = t("config_tab.msg_config_apply_err").format(err=e)
             self.status_message.emit(err, "error")
-            QMessageBox.critical(self, "Fehler", err)
+            QMessageBox.critical(self, t("app.error") if t("app.error") != "app.error" else "Error", err)
 
     def _on_restore_vanilla(self):
         reply = QMessageBox.question(
             self,
-            "Vanilla wiederherstellen",
-            "Möchtest du wirklich alle modifizierten Konfigurationen entfernen und die Original-Ubisoft-Werte wiederherstellen?",
+            t("config_tab.title_restore"),
+            t("config_tab.msg_restore_prompt"),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply == QMessageBox.StandardButton.Yes:
@@ -688,22 +689,28 @@ class ConfigTab(QWidget):
                 # Aktuelle Dateien neu einlesen (Single Source of Truth)
                 active_config = self.config_engine.read_active_config_from_modloader()
                 self._apply_data_to_widgets(active_config)
-                msg = f"{removed} modifizierte XML-Dateien wurden entfernt. Das Spiel lädt nun Original-Werte."
+                msg = t("config_tab.msg_restore_success").format(count=removed)
                 self.status_message.emit(msg, "warning")
-                QMessageBox.information(self, "Vanilla wiederhergestellt", msg)
+                QMessageBox.information(self, t("config_tab.title_restore"), msg)
             except Exception as e:
-                err = f"Fehler beim Wiederherstellen: {e}"
+                err = t("config_tab.msg_restore_err").format(err=e)
                 self.status_message.emit(err, "error")
-                QMessageBox.critical(self, "Fehler", err)
+                QMessageBox.critical(self, t("app.error") if t("app.error") != "app.error" else "Error", err)
 
     def _on_save_preset(self):
-        name, ok = QInputDialog.getText(self, "Preset speichern", "Name des neuen Presets:")
+        name, ok = QInputDialog.getText(self, t("config_tab.title_save_preset"), t("config_tab.msg_save_preset_prompt"))
         if ok and name.strip():
             filename = f"Custom_{name.strip().replace(' ', '_')}.json"
             data = self._collect_data_from_widgets()
             data["name"] = name.strip()
-            data["description"] = f"Benutzerdefiniertes Profil: {name.strip()}"
+            
+            # Use dictionary or fallback
+            profile_prefix = t("config_tab.custom_profile_prefix") 
+            if profile_prefix == "config_tab.custom_profile_prefix":
+                profile_prefix = "Custom Profile: "
+            data["description"] = f"{profile_prefix}{name.strip()}"
+            
             self.config_engine.save_custom_preset(filename, data)
             self._refresh_presets_combo()
             self._load_initial_preset(filename)
-            self.status_message.emit(f"Preset '{filename}' erfolgreich gespeichert.", "success")
+            self.status_message.emit(t("config_tab.msg_save_preset_success").format(filename=filename), "success")
