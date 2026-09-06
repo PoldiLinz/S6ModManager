@@ -297,8 +297,8 @@ class ConfigTab(QWidget):
         col_start: int,
         spin_widget: QSpinBox | QDoubleSpinBox,
         vanilla_val: int | float,
-        spin_width: int = 80,
-        badge_width: int = 54
+        spin_width: int = 90,
+        badge_width: int = 56
     ) -> QPushButton:
         """Fügt ein Modding-Triplet [SpinBox | VanillaBadge | RevertBtn] an (row, col_start) ein."""
         spin_widget.setFixedWidth(spin_width)

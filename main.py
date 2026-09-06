@@ -79,7 +79,10 @@ def main():
         theme_path = os.path.join(current_dir, "styles", "theme.qss")
         if os.path.exists(theme_path):
             with open(theme_path, "r", encoding="utf-8") as f:
-                app.setStyleSheet(f.read())
+                theme_str = f.read()
+                styles_abs_dir = os.path.join(current_dir, "styles").replace("\\", "/")
+                theme_str = theme_str.replace("ModManager/styles", styles_abs_dir)
+                app.setStyleSheet(theme_str)
 
         # Icon laden
         icon_path = os.path.join(current_dir, "assets", "icon.ico")

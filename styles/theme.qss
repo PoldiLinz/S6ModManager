@@ -438,7 +438,7 @@ QPushButton#RevertBtn[modified="true"]:hover {
 }
 
 /* Forms */
-QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+QLineEdit, QComboBox {
     background-color: #1a1d26;
     color: #e4e8ee;
     border: 1px solid #2d3342;
@@ -446,7 +446,60 @@ QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
     padding: 6px 10px;
     font-size: 13px;
     min-height: 32px;
+}
+
+QSpinBox, QDoubleSpinBox {
+    background-color: #1a1d26;
+    color: #e4e8ee;
+    border: 1px solid #2d3342;
+    border-radius: 4px;
+    padding-left: 6px;
+    padding-right: 22px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-size: 13px;
+    min-height: 30px;
+    font-family: "Consolas", "Segoe UI", monospace;
     qproperty-alignment: 'AlignCenter';
+}
+
+QSpinBox::up-button, QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 18px;
+    border-left: 1px solid #2d3342;
+    border-bottom: 1px solid #2d3342;
+    border-top-right-radius: 4px;
+    background-color: #1f232d;
+}
+
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {
+    background-color: #2e3544;
+}
+
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+    image: url("ModManager/styles/spin_up.png");
+    width: 8px;
+    height: 5px;
+}
+
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 18px;
+    border-left: 1px solid #2d3342;
+    border-bottom-right-radius: 4px;
+    background-color: #1f232d;
+}
+
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+    background-color: #2e3544;
+}
+
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+    image: url("ModManager/styles/spin_down.png");
+    width: 8px;
+    height: 5px;
 }
 
 QSpinBox:focus, QDoubleSpinBox:focus, QLineEdit:focus {

@@ -33,7 +33,10 @@ class TestGuiIntegration(unittest.TestCase):
         )
         if os.path.exists(theme_path):
             with open(theme_path, "r", encoding="utf-8") as f:
-                cls.app.setStyleSheet(f.read())
+                theme_str = f.read()
+                styles_abs_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "styles")).replace("\\", "/")
+                theme_str = theme_str.replace("ModManager/styles", styles_abs_dir)
+                cls.app.setStyleSheet(theme_str)
 
     def setUp(self):
         self.window = MainWindow()
