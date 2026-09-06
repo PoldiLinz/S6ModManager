@@ -38,11 +38,11 @@ class ConfigEngine:
         except Exception:
             return {
                 "settler_limits": [50, 50, 100, 150, 200, 200],
-                "storehouse_capacities": [54, 108, 162, 216],
-                "storehouse_max_amount_on_stock": 18,
+                "storehouse_capacities": [250, 500, 1000, 2000],
+                "storehouse_max_amount_on_stock": 100,
                 "storehouse_upgrade_gold": [150, 250, 500],
                 "castle_soldier_limits": [25, 43, 61, 91],
-                "castle_treasury_capacities": [20000, 20000, 20000, 20000],
+                "castle_treasury_capacities": [99000, 99000, 99000, 99000],
                 "castle_hitpoints": [750, 1500, 2250, 3000],
                 "cathedral_sermon_limits": [10, 15, 30, 60],
                 "cathedral_prestige_points": [100, 200, 400],
@@ -167,10 +167,10 @@ class ConfigEngine:
         store = _read_temp_xml(os.path.normpath("config/entities/b_storehouse.xml"))
         if store is not None:
             config["storehouse_capacities"] = self._read_xml_list(
-                store, ".//OutStockCapacity", [54, 108, 162, 216]
+                store, ".//OutStockCapacity", [250, 500, 1000, 2000]
             )
             config["storehouse_max_amount_on_stock"] = self._read_xml_text(
-                store, ".//MaxAmountOnStock", 18
+                store, ".//MaxAmountOnStock", 100
             )
             gold_amounts = []
             for uc in store.findall(".//UpgradeCost"):
@@ -184,8 +184,8 @@ class ConfigEngine:
                             pass
             config["storehouse_upgrade_gold"] = gold_amounts if gold_amounts else [150, 250, 500]
         else:
-            config["storehouse_capacities"] = [54, 108, 162, 216]
-            config["storehouse_max_amount_on_stock"] = 18
+            config["storehouse_capacities"] = [250, 500, 1000, 2000]
+            config["storehouse_max_amount_on_stock"] = 100
             config["storehouse_upgrade_gold"] = [150, 250, 500]
 
         # 3. Castle (verwende b_castle_me.xml als Referenz)
@@ -195,14 +195,14 @@ class ConfigEngine:
                 castle, ".//Limit", [25, 43, 61, 91]
             )
             config["castle_treasury_capacities"] = self._read_xml_list(
-                castle, ".//TreasuryStorageCapacity", [20000, 20000, 20000, 20000]
+                castle, ".//TreasuryStorageCapacity", [99000, 99000, 99000, 99000]
             )
             config["castle_hitpoints"] = self._read_xml_list(
                 castle, ".//MaxHitpoint", [750, 1500, 2250, 3000]
             )
         else:
             config["castle_soldier_limits"] = [25, 43, 61, 91]
-            config["castle_treasury_capacities"] = [20000, 20000, 20000, 20000]
+            config["castle_treasury_capacities"] = [99000, 99000, 99000, 99000]
             config["castle_hitpoints"] = [750, 1500, 2250, 3000]
 
         # 4. Cathedral (b_cathedral.xml als Referenz)

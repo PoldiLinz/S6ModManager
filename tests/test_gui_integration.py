@@ -74,7 +74,7 @@ class TestGuiIntegration(unittest.TestCase):
         # Werte prüfen
         self.assertEqual(cfg_tab.spin_settler_1.value(), 50)
         self.assertEqual(cfg_tab.spin_settler_4.value(), 200)
-        self.assertEqual(cfg_tab.spin_store_1.value(), 54)
+        self.assertEqual(cfg_tab.spin_store_1.value(), 250)
         self.assertEqual(cfg_tab.spin_mine_stone.value(), 250)
         self.assertTrue(cfg_tab.radio_bat_6.isChecked())
 

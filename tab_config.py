@@ -31,11 +31,11 @@ VANILLA_DEFAULTS = {
     "settler_4": 200,
 
     # Lagerhaus
-    "store_1": 54,
-    "store_2": 108,
-    "store_3": 162,
-    "store_4": 216,
-    "store_max": 18,
+    "store_1": 250,
+    "store_2": 500,
+    "store_3": 1000,
+    "store_4": 2000,
+    "store_max": 100,
     "store_gold": 500,
 
     # Burg & Schloss
@@ -43,7 +43,7 @@ VANILLA_DEFAULTS = {
     "castle_soldier_2": 43,
     "castle_soldier_3": 61,
     "castle_soldier_4": 91,
-    "castle_treasury": 20000,
+    "castle_treasury": 99000,
     "castle_hp": 3000,
 
     # Kathedrale
@@ -356,22 +356,22 @@ class ConfigTab(QWidget):
         box_store = QGroupBox(t("config_tab.group_storehouse"))
         g_store = self._setup_grid(box_store)
 
-        self.spin_store_1 = self._create_spin(10, 5000, 54, 10)
+        self.spin_store_1 = self._create_spin(50, 10000, 250, 25)
         self._add_setting_item(g_store, 0, 0, t("config_tab.store_1"), self.spin_store_1, VANILLA_DEFAULTS["store_1"])
 
-        self.spin_store_2 = self._create_spin(10, 5000, 250, 50)
+        self.spin_store_2 = self._create_spin(50, 10000, 500, 50)
         self._add_setting_item(g_store, 1, 0, t("config_tab.store_2"), self.spin_store_2, VANILLA_DEFAULTS["store_2"])
 
-        self.spin_store_3 = self._create_spin(10, 5000, 500, 50)
+        self.spin_store_3 = self._create_spin(50, 10000, 1000, 100)
         self._add_setting_item(g_store, 2, 0, t("config_tab.store_3"), self.spin_store_3, VANILLA_DEFAULTS["store_3"])
 
-        self.spin_store_4 = self._create_spin(10, 5000, 1000, 100)
+        self.spin_store_4 = self._create_spin(50, 10000, 2000, 100)
         self._add_setting_item(g_store, 3, 0, t("config_tab.store_4"), self.spin_store_4, VANILLA_DEFAULTS["store_4"])
 
-        self.spin_store_max = self._create_spin(10, 500, 60, 5)
+        self.spin_store_max = self._create_spin(10, 1000, 100, 10)
         self._add_setting_item(g_store, 4, 0, t("config_tab.store_max"), self.spin_store_max, VANILLA_DEFAULTS["store_max"])
 
-        self.spin_store_gold = self._create_spin(0, 5000, 250, 50)
+        self.spin_store_gold = self._create_spin(0, 5000, 500, 50)
         self._add_setting_item(g_store, 5, 0, t("config_tab.store_gold"), self.spin_store_gold, VANILLA_DEFAULTS["store_gold"])
 
         layout.addWidget(box_store)
@@ -611,16 +611,16 @@ class ConfigTab(QWidget):
         self.spin_settler_4.setValue(s_limits[4] if len(s_limits) > 4 else 200)
 
         # Storehouse
-        s_caps = data.get("storehouse_capacities", [54, 108, 162, 216])
-        self.spin_store_1.setValue(s_caps[0] if len(s_caps) > 0 else 54)
-        self.spin_store_2.setValue(s_caps[1] if len(s_caps) > 1 else 108)
-        self.spin_store_3.setValue(s_caps[2] if len(s_caps) > 2 else 162)
-        self.spin_store_4.setValue(s_caps[3] if len(s_caps) > 3 else 216)
-        self.spin_store_max.setValue(data.get("storehouse_max_amount_on_stock", 18))
+        s_caps = data.get("storehouse_capacities", [250, 500, 1000, 2000])
+        self.spin_store_1.setValue(s_caps[0] if len(s_caps) > 0 else 250)
+        self.spin_store_2.setValue(s_caps[1] if len(s_caps) > 1 else 500)
+        self.spin_store_3.setValue(s_caps[2] if len(s_caps) > 2 else 1000)
+        self.spin_store_4.setValue(s_caps[3] if len(s_caps) > 3 else 2000)
+        self.spin_store_max.setValue(data.get("storehouse_max_amount_on_stock", 100))
 
         # Storehouse Upgrade Gold (letzter Wert wird im UI exponiert)
-        s_gold = data.get("storehouse_upgrade_gold", [150, 250, 250])
-        self.spin_store_gold.setValue(s_gold[-1] if s_gold else 250)
+        s_gold = data.get("storehouse_upgrade_gold", [150, 250, 500])
+        self.spin_store_gold.setValue(s_gold[-1] if s_gold else 500)
 
         # Castle
         c_soldiers = data.get("castle_soldier_limits", [25, 43, 61, 91])
@@ -629,8 +629,8 @@ class ConfigTab(QWidget):
         self.spin_castle_soldier_3.setValue(c_soldiers[2] if len(c_soldiers) > 2 else 61)
         self.spin_castle_soldier_4.setValue(c_soldiers[3] if len(c_soldiers) > 3 else 91)
 
-        c_treasury = data.get("castle_treasury_capacities", [20000, 20000, 20000, 20000])
-        self.spin_castle_treasury.setValue(c_treasury[-1] if c_treasury else 20000)
+        c_treasury = data.get("castle_treasury_capacities", [99000, 99000, 99000, 99000])
+        self.spin_castle_treasury.setValue(c_treasury[-1] if c_treasury else 99000)
         c_hp = data.get("castle_hitpoints", [750, 1500, 2250, 3000])
         self.spin_castle_hp.setValue(c_hp[-1] if c_hp else 3000)
 
