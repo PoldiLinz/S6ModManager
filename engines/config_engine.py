@@ -9,6 +9,7 @@ import shutil
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Any, Optional
 from ModManager.engines.system_engine import SystemEngine
+from ModManager.patcher.bba_packer import BBAPacker
 
 
 class ConfigEngine:
@@ -16,7 +17,6 @@ class ConfigEngine:
 
     def __init__(self, system_engine: Optional[SystemEngine] = None):
         self.system = system_engine or SystemEngine()
-        self.vanilla_dir = os.path.join(self.system.presets_path, "Vanilla")
         self.presets_dir = self.system.presets_path
 
     def load_preset(self, preset_name: str) -> Dict[str, Any]:
@@ -30,6 +30,36 @@ class ConfigEngine:
 
         with open(preset_file, "r", encoding="utf-8") as f:
             return json.load(f)
+
+    def get_vanilla_config(self) -> Dict[str, Any]:
+        """Gibt die Vanilla-Standard-Konfiguration zurück."""
+        try:
+            return self.load_preset("Vanilla_Default.json")
+        except Exception:
+            return {
+                "settler_limits": [50, 50, 100, 150, 200, 200],
+                "storehouse_capacities": [54, 108, 162, 216],
+                "storehouse_max_amount_on_stock": 18,
+                "storehouse_upgrade_gold": [150, 250, 500],
+                "castle_soldier_limits": [25, 43, 61, 91],
+                "castle_treasury_capacities": [20000, 20000, 20000, 20000],
+                "castle_hitpoints": [750, 1500, 2250, 3000],
+                "cathedral_sermon_limits": [10, 15, 30, 60],
+                "cathedral_prestige_points": [100, 200, 400],
+                "mine_stone_capacity": 250,
+                "mine_iron_capacity": 250,
+                "well_water_refill_rate": 0.5,
+                "well_water_capacity": [25, 50, 75, 100],
+                "road_speed_modifier": 1.25,
+                "cart_speed": 320,
+                "workshop_output_capacity": 9,
+                "battalion_size": 6,
+                "wall_gate_health": 1200,
+                "wall_turret_health": 1000,
+                "wall_segment_health": 800,
+                "soldier_speed": 480,
+                "soldier_health": 120,
+            }
 
     def save_custom_preset(self, preset_name: str, data: Dict[str, Any]) -> str:
         """Speichert eine benutzerdefinierte Konfiguration als Preset-JSON."""
@@ -107,16 +137,21 @@ class ConfigEngine:
             return result if result else default_list
         return default_list
 
-    def read_active_config_from_modloader(self) -> Dict[str, Any]:
-        """
-        Liest die tatsächlichen Werte direkt aus den XML-Dateien im aktiven
-        ModLoader-Ordner. Dies ist die Single Source of Truth.
-        Wenn eine Datei nicht existiert, werden die Vanilla-Defaults verwendet.
-        """
+    def _parse_config_from_extracted_dir(self, extracted_dir: str) -> Dict[str, Any]:
+        """Liest alle Konfigurationswerte aus den XML-Dateien im übergebenen entpackten Ordner."""
         config: Dict[str, Any] = {}
 
+        def _read_temp_xml(rel_path: str):
+            full_path = os.path.join(extracted_dir, rel_path)
+            if os.path.exists(full_path):
+                try:
+                    return ET.parse(full_path).getroot()
+                except Exception:
+                    pass
+            return None
+
         # 1. logic.xml -> settler_limits, road_speed_modifier
-        logic = self._read_xml_from_modloader(os.path.normpath("config/logic.xml"))
+        logic = _read_temp_xml(os.path.normpath("config/logic.xml"))
         if logic is not None:
             config["settler_limits"] = self._read_xml_list(
                 logic, ".//SettlerLimit", [50, 50, 100, 150, 200, 200]
@@ -129,7 +164,7 @@ class ConfigEngine:
             config["road_speed_modifier"] = 1.25
 
         # 2. b_storehouse.xml
-        store = self._read_xml_from_modloader(os.path.normpath("config/entities/b_storehouse.xml"))
+        store = _read_temp_xml(os.path.normpath("config/entities/b_storehouse.xml"))
         if store is not None:
             config["storehouse_capacities"] = self._read_xml_list(
                 store, ".//OutStockCapacity", [54, 108, 162, 216]
@@ -137,7 +172,6 @@ class ConfigEngine:
             config["storehouse_max_amount_on_stock"] = self._read_xml_text(
                 store, ".//MaxAmountOnStock", 18
             )
-            # Upgrade Gold: Letzen Wert extrahieren
             gold_amounts = []
             for uc in store.findall(".//UpgradeCost"):
                 for ga in uc.findall("GoodAmount"):
@@ -155,7 +189,7 @@ class ConfigEngine:
             config["storehouse_upgrade_gold"] = [150, 250, 500]
 
         # 3. Castle (verwende b_castle_me.xml als Referenz)
-        castle = self._read_xml_from_modloader(os.path.normpath("config/entities/b_castle_me.xml"))
+        castle = _read_temp_xml(os.path.normpath("config/entities/b_castle_me.xml"))
         if castle is not None:
             config["castle_soldier_limits"] = self._read_xml_list(
                 castle, ".//Limit", [25, 43, 61, 91]
@@ -172,7 +206,7 @@ class ConfigEngine:
             config["castle_hitpoints"] = [750, 1500, 2250, 3000]
 
         # 4. Cathedral (b_cathedral.xml als Referenz)
-        cath = self._read_xml_from_modloader(os.path.normpath("config/entities/b_cathedral.xml"))
+        cath = _read_temp_xml(os.path.normpath("config/entities/b_cathedral.xml"))
         if cath is not None:
             config["cathedral_sermon_limits"] = self._read_xml_list(
                 cath, ".//SermonSettlerLimit", [10, 15, 30, 60]
@@ -185,14 +219,14 @@ class ConfigEngine:
             config["cathedral_prestige_points"] = [100, 200, 400]
 
         # 5. Minen
-        stone = self._read_xml_from_modloader(os.path.normpath("config/entities/r_stonemine.xml"))
+        stone = _read_temp_xml(os.path.normpath("config/entities/r_stonemine.xml"))
         config["mine_stone_capacity"] = self._read_xml_text(stone, ".//Capacity", 250) if stone is not None else 250
 
-        iron = self._read_xml_from_modloader(os.path.normpath("config/entities/r_ironmine.xml"))
+        iron = _read_temp_xml(os.path.normpath("config/entities/r_ironmine.xml"))
         config["mine_iron_capacity"] = self._read_xml_text(iron, ".//Capacity", 250) if iron is not None else 250
 
         # 6. Brunnen
-        well = self._read_xml_from_modloader(os.path.normpath("config/entities/b_well.xml"))
+        well = _read_temp_xml(os.path.normpath("config/entities/b_well.xml"))
         if well is not None:
             config["well_water_refill_rate"] = self._read_xml_text(
                 well, ".//WaterRefillRatePerSecond", 0.5, float
@@ -205,21 +239,21 @@ class ConfigEngine:
             config["well_water_capacity"] = [25, 50, 75, 100]
 
         # 7. Mauern / Tore / Türme (jeweils _me als Referenz)
-        gate = self._read_xml_from_modloader(os.path.normpath("config/entities/b_wallgate_me.xml"))
+        gate = _read_temp_xml(os.path.normpath("config/entities/b_wallgate_me.xml"))
         config["wall_gate_health"] = self._read_xml_text(gate, ".//MaxHealth", 1200) if gate is not None else 1200
 
-        turret = self._read_xml_from_modloader(os.path.normpath("config/entities/b_wallturret_me.xml"))
+        turret = _read_temp_xml(os.path.normpath("config/entities/b_wallturret_me.xml"))
         config["wall_turret_health"] = self._read_xml_text(turret, ".//MaxHealth", 1000) if turret is not None else 1000
 
-        segment = self._read_xml_from_modloader(os.path.normpath("config/entities/b_wallsegment_me.xml"))
+        segment = _read_temp_xml(os.path.normpath("config/entities/b_wallsegment_me.xml"))
         config["wall_segment_health"] = self._read_xml_text(segment, ".//MaxHealth", 800) if segment is not None else 800
 
         # 8. Kasernen (Bataillonsgröße)
-        barracks = self._read_xml_from_modloader(os.path.normpath("config/entities/b_barracks.xml"))
+        barracks = _read_temp_xml(os.path.normpath("config/entities/b_barracks.xml"))
         config["battalion_size"] = self._read_xml_text(barracks, ".//BattalionSize", 6) if barracks is not None else 6
 
         # 9. Soldaten
-        sword = self._read_xml_from_modloader(os.path.normpath("config/entities/u_militarysword.xml"))
+        sword = _read_temp_xml(os.path.normpath("config/entities/u_militarysword.xml"))
         if sword is not None:
             config["soldier_speed"] = self._read_xml_text(sword, ".//Speed", 480)
             config["soldier_health"] = self._read_xml_text(sword, ".//MaxHealth", 120)
@@ -228,17 +262,84 @@ class ConfigEngine:
             config["soldier_health"] = 120
 
         # 10. Karren
-        cart = self._read_xml_from_modloader(os.path.normpath("config/entities/m_hunterpushcart.xml"))
+        cart = _read_temp_xml(os.path.normpath("config/entities/m_hunterpushcart.xml"))
         config["cart_speed"] = self._read_xml_text(cart, ".//Speed", 320) if cart is not None else 320
 
         # 11. Betriebe
-        bakery = self._read_xml_from_modloader(os.path.normpath("config/entities/b_bakery.xml"))
+        bakery = _read_temp_xml(os.path.normpath("config/entities/b_bakery.xml"))
         if bakery is not None:
             caps = self._read_xml_list(bakery, ".//OutStockCapacity", [9])
             config["workshop_output_capacity"] = caps[0] if caps else 9
         else:
             config["workshop_output_capacity"] = 9
 
+        return config
+
+    def read_active_config_from_modloader(self) -> Dict[str, Any]:
+        """
+        Liest die aktiven Werte über eine 3-Stufen-Fallback-Kette ein:
+        1. Aktive mod.bba aus dem Spiel (base/shr/extra1) in processing/unpack/ entpacken.
+        2. Fallback: Jüngstes funktionierendes Backup aus Backups/bba/ entpacken.
+        3. Fallback: 100% Vanilla-Standardwerte zurückgeben.
+        processing/unpack/ wird vor jeder Operation restlos geleert und danach aufgeräumt.
+        """
+        from ModManager.patcher.bba_packer import BBAPacker
+        from pathlib import Path
+        packer = BBAPacker(self.system.workspace_path)
+        
+        # --- Stufe 1: Aktive mod.bba im Spielverzeichnis ---
+        modloader_dir = os.path.join(self.system.game_path, "modloader")
+        candidate_bbas = [
+            os.path.join(modloader_dir, "base", "mod.bba"),
+            os.path.join(modloader_dir, "shr", "mod.bba"),
+            os.path.join(modloader_dir, "extra1", "mod.bba"),
+        ]
+        existing_bbas = [b for b in candidate_bbas if os.path.exists(b)]
+        if existing_bbas:
+            # Neueste BBA zuerst probieren
+            for bba_candidate in sorted(existing_bbas, key=os.path.getmtime, reverse=True):
+                try:
+                    extracted_dir = packer.unpack_archive(Path(bba_candidate))
+                    config = self._parse_config_from_extracted_dir(str(extracted_dir))
+                    packer.cleanup_unpack()
+                    print(f"[ConfigEngine] Aktive Konfiguration erfolgreich aus {bba_candidate} geladen.")
+                    return config
+                except Exception as e:
+                    print(f"[Warning] Entpacken von Spiel-BBA {bba_candidate} fehlgeschlagen: {e}")
+                    packer.cleanup_unpack()
+
+        # --- Stufe 2: Fallback auf gespeicherte Backups in Backups/bba/ ---
+        backups = packer.list_bba_backups()
+        if backups:
+            print(f"[ConfigEngine] Versuche Fallback auf {len(backups)} gespeicherte Mod-Stand-Backups...")
+            for b_info in backups:
+                try:
+                    b_path = Path(b_info["path"])
+                    extracted_dir = packer.unpack_archive(b_path)
+                    config = self._parse_config_from_extracted_dir(str(extracted_dir))
+                    packer.cleanup_unpack()
+                    print(f"[ConfigEngine] Fallback-Erfolg: Konfiguration aus Backup {b_info['filename']} geladen.")
+                    return config
+                except Exception as e:
+                    print(f"[Warning] Backup {b_info['filename']} konnte nicht entpackt werden: {e}")
+                    packer.cleanup_unpack()
+
+        # --- Stufe 3: Fallback auf 100% Vanilla-Standard ---
+        print("[ConfigEngine] Kein lesbares BBA-Archiv gefunden. Verwende Vanilla-Standardwerte.")
+        packer.cleanup_unpack()
+        return self.get_vanilla_config()
+
+    def load_config_from_backup_bba(self, bba_path: str) -> Dict[str, Any]:
+        """
+        Entpackt gezielt ein bestimmtes BBA-Backup nach processing/unpack/
+        und liest die Konfiguration aus.
+        """
+        from ModManager.patcher.bba_packer import BBAPacker
+        from pathlib import Path
+        packer = BBAPacker(self.system.workspace_path)
+        extracted_dir = packer.unpack_archive(Path(bba_path))
+        config = self._parse_config_from_extracted_dir(str(extracted_dir))
+        packer.cleanup_unpack()
         return config
 
     # -------------------------------------------------------------------------
@@ -248,12 +349,18 @@ class ConfigEngine:
     def _get_base_xml_path(self, rel_path: str) -> str:
         """
         Ermittelt den Pfad zur Basis-XML. 
-        Bevorzugt Preloaded-Mods aus Original/mod (S6Patcher Fixes), fällt auf Vanilla zurück.
+        Bevorzugt Preloaded-Mods aus Original Mod Files, fällt auf entpackte Basis-Spieldateien zurück.
         """
         preloaded_path = os.path.join(self.system.original_mods_path, rel_path)
         if os.path.exists(preloaded_path):
             return preloaded_path
-        return os.path.join(self.vanilla_dir, rel_path)
+            
+        shrgcfg1_path = os.path.join(self.system.base_game_files_path, "shrgcfg1", rel_path)
+        if os.path.exists(shrgcfg1_path):
+            return shrgcfg1_path
+            
+        shrgcfg0_path = os.path.join(self.system.base_game_files_path, "shrgcfg0", rel_path)
+        return shrgcfg0_path
 
     def _modify_logic_xml(self, config: Dict[str, Any]) -> str:
         """Erstellt den modifizierten XML-Inhalt für logic.xml."""
@@ -649,8 +756,11 @@ class ConfigEngine:
 
         return generated
 
-    def apply_config_to_modloader(self, config: Dict[str, Any]) -> int:
-        """Schreibt alle modifizierten XML-Dateien direkt in den ModLoader."""
+    def apply_configs(self, config: Dict[str, Any]) -> int:
+        """Schreibt alle modifizierten XML-Dateien in processing/pack/ und verpackt sie in mod.bba."""
+        packer = BBAPacker(self.system.workspace_path)
+        packer.prepare_pack_staging()
+        
         xml_files = self.generate_all_xmls(config)
         written_count = 0
 
@@ -659,43 +769,58 @@ class ConfigEngine:
             if self.system.is_protected_file(rel_path):
                 continue
 
-            target_file = os.path.join(self.system.modloader_path, rel_path)
+            target_file = os.path.join(packer.pack_dir, rel_path)
             os.makedirs(os.path.dirname(target_file), exist_ok=True)
 
             with open(target_file, "w", encoding="utf-8") as f:
                 f.write(xml_content)
             written_count += 1
+            
+        packer.pack_and_deploy(self.system.game_path)
 
         return written_count
 
-    def restore_vanilla_configs(self) -> int:
+    def restore_vanilla_configs(self, force_global: bool = False) -> int:
         """
-        Entfernt alle ModManager-Änderungen aus dem ModLoader.
-        Wenn eine Datei im S6Patcher-Preloaded-Ordner (Original/mod) existiert,
-        wird sie daraus wiederhergestellt. Andernfalls wird sie gelöscht (echtes Vanilla).
-        Geschützte S6Patcher-Dateien bleiben unangetastet!
+        Entfernt alle ModManager-Änderungen.
+        Bei force_global=True: 100% Reset. Kopiert die originale mod.bba in base und extra1.
+        Bei force_global=False: Ruft apply_configs({}) auf, um alle Mods zu entfernen.
         """
+        if not force_global:
+            # Partielles Zurücksetzen = Leere Konfiguration anwenden (nur Bugfixes bleiben)
+            self.apply_configs({})
+            return 1
+            
         restored_count = 0
-        if not os.path.exists(self.system.modloader_path):
+        if not os.path.exists(self.system.game_path):
             return 0
 
-        # Zu überprüfende Config-Pfade (wir iterieren durch die generierten Pfade)
-        # Besser: Wir iterieren durch alle Dateien im config-Ordner des aktiven ModLoaders
-        config_dir = os.path.join(self.system.modloader_path, "config")
-        if os.path.exists(config_dir):
-            for root, _, files in os.walk(config_dir):
-                for file in files:
-                    full_path = os.path.join(root, file)
-                    rel_path = os.path.relpath(full_path, self.system.modloader_path)
-                    
-                    if not self.system.is_protected_file(rel_path):
-                        # Prüfen ob im Original-Ordner vorhanden
-                        original_file_path = os.path.join(self.system.original_mods_path, rel_path)
+        modloader_dir = os.path.join(self.system.game_path, "modloader")
+        base_bba = os.path.join(modloader_dir, "base", "mod.bba")
+        extra1_bba = os.path.join(modloader_dir, "extra1", "mod.bba")
+        shr_bba = os.path.join(modloader_dir, "shr", "mod.bba")
+        
+        original_bba = os.path.join(self.system.original_mods_path, "mod.bba")
+        
+        if os.path.exists(original_bba):
+            for bba_target in [base_bba, extra1_bba, shr_bba]:
+                if os.path.exists(os.path.dirname(bba_target)):
+                    shutil.copy2(original_bba, bba_target)
+                    restored_count += 1
+
+        # Script-Ordner (UserScript) wiederherstellen
+        if hasattr(self.system, 'user_script_path') and self.system.user_script_path:
+            original_script_dir = os.path.join(self.system.original_mods_path, "Script")
+            if os.path.exists(self.system.user_script_path):
+                for root, _, files in os.walk(self.system.user_script_path):
+                    for file in files:
+                        full_path = os.path.join(root, file)
+                        rel_path = os.path.relpath(full_path, self.system.user_script_path)
+                        original_file_path = os.path.join(original_script_dir, rel_path)
+                        
                         if os.path.exists(original_file_path):
-                            # Wiederherstellen aus Preloaded Mod
                             shutil.copy2(original_file_path, full_path)
                         else:
-                            # Löschen (Vanilla Fallback auf .bba)
                             os.remove(full_path)
                         restored_count += 1
 

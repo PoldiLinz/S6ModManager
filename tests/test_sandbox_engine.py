@@ -22,17 +22,13 @@ class TestSandboxEngine(unittest.TestCase):
 
     def test_generate_lua_sandbox_code(self):
         options = {
-            "upgrade_knight": True,
-            "add_resources": True,
-            "fill_storehouse": True,
-            "reveal_fog": True,
-            "gold_amount": 50000,
-            "resources_amount": 500
+            "title_level": 3,
+            "resources": {"G_Gold": 50000},
+            "reveal_fog": True
         }
         lua_code = self.sandbox.generate_lua_sandbox_code(options)
         self.assertIn("Logic.KnightUpgrade", lua_code)
-        self.assertIn("AddResourcesToPlayer(Goods.G_Gold, 50000", lua_code)
-        self.assertIn("Logic.AddGoodToStock", lua_code)
+        self.assertIn("Logic.AddGoodToStock(hq, Goods.G_Gold, 50000", lua_code)
         self.assertIn("Display.SetRenderFogOfWar(-1)", lua_code)
         self.assertIn(SandboxEngine.INJECTION_START_MARKER, lua_code)
         self.assertIn(SandboxEngine.INJECTION_END_MARKER, lua_code)
@@ -55,7 +51,7 @@ end
         self.assertFalse(self.sandbox.is_script_injected(sample_script))
 
         # Injektion
-        options = {"upgrade_knight": True, "add_resources": True, "fill_storehouse": True, "reveal_fog": True}
+        options = {"title_level": 3, "resources": {"G_Gold": 50000}, "reveal_fog": True}
         self.sandbox.inject_sandbox_into_script(sample_script, options)
         self.assertTrue(self.sandbox.is_script_injected(sample_script))
 

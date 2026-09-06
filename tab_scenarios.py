@@ -280,7 +280,6 @@ class ScenarioTab(QWidget):
             self.scenario_engine.activate_scenario(map_id, var_id)
             msg = t("scenarios_tab.msg_activate_success").format(var_id=var_id, map_id=map_id)
             self.status_message.emit(msg, "success")
-            QMessageBox.information(self, t("scenarios_tab.title_activated"), msg)
             self.refresh_maps()
         except Exception as e:
             err = t("scenarios_tab.msg_activate_error").format(err=e)
@@ -296,7 +295,6 @@ class ScenarioTab(QWidget):
             self.scenario_engine.revert_map_to_vanilla(map_id)
             msg = t("scenarios_tab.msg_revert_success").format(map_id=map_id)
             self.status_message.emit(msg, "warning")
-            QMessageBox.information(self, t("scenarios_tab.title_reverted"), msg)
             self.refresh_maps()
         except Exception as e:
             err = t("scenarios_tab.msg_revert_error").format(err=e)

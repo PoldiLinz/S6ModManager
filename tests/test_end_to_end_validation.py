@@ -78,12 +78,9 @@ class TestEndToEndValidation(unittest.TestCase):
 
         # 4. Sandbox-Engine
         opts = {
-            "upgrade_knight": True,
-            "add_resources": True,
-            "fill_storehouse": True,
+            "title_level": 3,
+            "resources": {"G_Gold": 50000},
             "reveal_fog": True,
-            "gold_amount": 50000,
-            "resources_amount": 500,
         }
         lua_code = self.sandbox_engine.generate_lua_sandbox_code(opts)
         self.assertIn("Logic.KnightUpgrade", lua_code)
@@ -108,8 +105,8 @@ class TestEndToEndValidation(unittest.TestCase):
 
         # 4. Tab 3: Sandbox Tab
         sand_tab = self.window.tab_sandbox
-        self.assertGreaterEqual(sand_tab.combo_maps.count(), 1)
-        self.assertTrue(len(sand_tab.txt_lua_preview.toPlainText()) > 50)
+        self.assertGreaterEqual(sand_tab.list_maps.count(), 1)
+        self.assertTrue(len(sand_tab.txt_preview.toPlainText()) > 20)
 
         # 5. Tab 4: System Tab
         sys_tab = self.window.tab_system

@@ -99,50 +99,80 @@ class SettingsDialog(QDialog):
         btn_open_maps.clicked.connect(lambda: self._open_in_explorer(self.txt_maps.text()))
         g_paths.addWidget(btn_open_maps, 1, 3)
 
-        # C. ModLoader shr/mod
-        g_paths.addWidget(QLabel(t("settings.modloader_path")), 2, 0)
+        # C. UserScript
+        g_paths.addWidget(QLabel(t("settings.user_script_path")), 2, 0)
+        self.txt_script = QLineEdit(getattr(self.system, "user_script_path", ""))
+        g_paths.addWidget(self.txt_script, 2, 1)
+
+        btn_browse_script = QPushButton(t("settings.btn_browse"))
+        btn_browse_script.setFixedWidth(125)
+        btn_browse_script.clicked.connect(lambda: self._browse_folder(self.txt_script, t("settings.browse_user_script_title")))
+        g_paths.addWidget(btn_browse_script, 2, 2)
+
+        btn_open_script = QPushButton(t("settings.btn_open"))
+        btn_open_script.setFixedWidth(85)
+        btn_open_script.clicked.connect(lambda: self._open_in_explorer(self.txt_script.text()))
+        g_paths.addWidget(btn_open_script, 2, 3)
+
+        # D. ModLoader shr/mod
+        g_paths.addWidget(QLabel(t("settings.modloader_path")), 3, 0)
         self.txt_mod = QLineEdit(self.system.modloader_path)
-        g_paths.addWidget(self.txt_mod, 2, 1)
+        g_paths.addWidget(self.txt_mod, 3, 1)
 
         btn_browse_mod = QPushButton(t("settings.btn_browse"))
         btn_browse_mod.setFixedWidth(125)
         btn_browse_mod.clicked.connect(lambda: self._browse_folder(self.txt_mod, t("settings.browse_modloader_title")))
-        g_paths.addWidget(btn_browse_mod, 2, 2)
+        g_paths.addWidget(btn_browse_mod, 3, 2)
 
         btn_open_mod = QPushButton(t("settings.btn_open"))
         btn_open_mod.setFixedWidth(85)
         btn_open_mod.clicked.connect(lambda: self._open_in_explorer(self.txt_mod.text()))
-        g_paths.addWidget(btn_open_mod, 2, 3)
+        g_paths.addWidget(btn_open_mod, 3, 3)
 
-        # D. Preloaded Mods (S6Patcher Fixes)
-        g_paths.addWidget(QLabel(t("settings.original_mods_path")), 3, 0)
+        # E. Preloaded Mods (S6Patcher Fixes)
+        g_paths.addWidget(QLabel(t("settings.original_mods_path")), 4, 0)
         self.txt_original = QLineEdit(self.system.original_mods_path)
-        g_paths.addWidget(self.txt_original, 3, 1)
+        g_paths.addWidget(self.txt_original, 4, 1)
 
         btn_browse_original = QPushButton(t("settings.btn_browse"))
         btn_browse_original.setFixedWidth(125)
         btn_browse_original.clicked.connect(lambda: self._browse_folder(self.txt_original, t("settings.browse_original_title")))
-        g_paths.addWidget(btn_browse_original, 3, 2)
+        g_paths.addWidget(btn_browse_original, 4, 2)
 
         btn_open_original = QPushButton(t("settings.btn_open"))
         btn_open_original.setFixedWidth(85)
         btn_open_original.clicked.connect(lambda: self._open_in_explorer(self.txt_original.text()))
-        g_paths.addWidget(btn_open_original, 3, 3)
+        g_paths.addWidget(btn_open_original, 4, 3)
 
-        # E. Presets
-        g_paths.addWidget(QLabel(t("settings.presets_path")), 4, 0)
+        # F. Base Game Files (shrgcfg0 / shrgcfg1 etc.)
+        g_paths.addWidget(QLabel(t("settings.base_game_files_path")), 5, 0)
+        self.txt_base_game = QLineEdit(getattr(self.system, "base_game_files_path", ""))
+        g_paths.addWidget(self.txt_base_game, 5, 1)
+
+        btn_browse_base_game = QPushButton(t("settings.btn_browse"))
+        btn_browse_base_game.setFixedWidth(125)
+        btn_browse_base_game.clicked.connect(lambda: self._browse_folder(self.txt_base_game, t("settings.browse_base_game_files_title")))
+        g_paths.addWidget(btn_browse_base_game, 5, 2)
+
+        btn_open_base_game = QPushButton(t("settings.btn_open"))
+        btn_open_base_game.setFixedWidth(85)
+        btn_open_base_game.clicked.connect(lambda: self._open_in_explorer(self.txt_base_game.text()))
+        g_paths.addWidget(btn_open_base_game, 5, 3)
+
+        # G. Presets
+        g_paths.addWidget(QLabel(t("settings.presets_path")), 6, 0)
         self.txt_presets = QLineEdit(self.system.presets_path)
-        g_paths.addWidget(self.txt_presets, 4, 1)
+        g_paths.addWidget(self.txt_presets, 6, 1)
 
         btn_browse_presets = QPushButton(t("settings.btn_browse"))
         btn_browse_presets.setFixedWidth(125)
         btn_browse_presets.clicked.connect(lambda: self._browse_folder(self.txt_presets, t("settings.browse_presets_title")))
-        g_paths.addWidget(btn_browse_presets, 4, 2)
+        g_paths.addWidget(btn_browse_presets, 6, 2)
 
         btn_open_presets = QPushButton(t("settings.btn_open"))
         btn_open_presets.setFixedWidth(85)
         btn_open_presets.clicked.connect(lambda: self._open_in_explorer(self.txt_presets.text()))
-        g_paths.addWidget(btn_open_presets, 4, 3)
+        g_paths.addWidget(btn_open_presets, 6, 3)
         layout.addWidget(box_paths)
 
         self._refresh_global_status()
@@ -207,8 +237,10 @@ class SettingsDialog(QDialog):
             "language": new_lang,
             "game_path": self.txt_game.text().strip(),
             "user_maps_path": self.txt_maps.text().strip(),
+            "user_script_path": self.txt_script.text().strip(),
             "modloader_path": self.txt_mod.text().strip(),
             "original_mods_path": self.txt_original.text().strip(),
+            "base_game_files_path": self.txt_base_game.text().strip(),
             "presets_path": self.txt_presets.text().strip()
         }
         try:

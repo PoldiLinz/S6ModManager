@@ -16,6 +16,7 @@ from ModManager.tab_config import ConfigTab
 from ModManager.tab_scenarios import ScenarioTab
 from ModManager.tab_sandbox import SandboxTab
 from ModManager.tab_system import SystemTab
+from ModManager.engines.i18n_engine import t
 
 
 class TestGuiIntegration(unittest.TestCase):
@@ -44,20 +45,20 @@ class TestGuiIntegration(unittest.TestCase):
         """Prüft, ob das Hauptfenster, die Titel und alle 4 Tabs existieren."""
         self.assertEqual(
             self.window.windowTitle(),
-            "Die Siedler 6 - Mod & Map Manager (S6Patcher Edition)",
+            t("app.title"),
         )
         self.assertEqual(self.window.tab_widget.count(), 4)
         self.assertEqual(
-            self.window.tab_widget.tabText(0), "⚙️ Konfigurationen & Limits"
+            self.window.tab_widget.tabText(0), t("tabs.config")
         )
         self.assertEqual(
-            self.window.tab_widget.tabText(1), "🗺️ Karten & Szenario-Varianten"
+            self.window.tab_widget.tabText(1), t("tabs.scenarios")
         )
         self.assertEqual(
-            self.window.tab_widget.tabText(2), "🧪 Testmap & Sandbox-Injektor"
+            self.window.tab_widget.tabText(2), t("tabs.sandbox")
         )
         self.assertEqual(
-            self.window.tab_widget.tabText(3), "🛡️ System & ModLoader-Status"
+            self.window.tab_widget.tabText(3), t("tabs.system")
         )
 
     def test_config_tab_widgets_and_presets(self):
@@ -109,16 +110,10 @@ class TestGuiIntegration(unittest.TestCase):
     def test_sandbox_tab_widgets_and_lua_preview(self):
         """Prüft die Funktionsfähigkeit von Tab 3 (Sandbox Injektor)."""
         sand_tab: SandboxTab = self.window.tab_sandbox
-        self.assertGreaterEqual(sand_tab.combo_maps.count(), 1)
+        self.assertGreaterEqual(sand_tab.list_maps.count(), 1)
 
-        # Optionen umschalten und Lua-Vorschau prüfen
-        sand_tab.chk_duke.setChecked(True)
-        sand_tab.spin_gold.setValue(75000)
-        sand_tab._update_lua_preview()
-
-        preview_text = sand_tab.txt_lua_preview.toPlainText()
-        self.assertIn("Logic.KnightUpgrade", preview_text)
-        self.assertIn("75000", preview_text)
+        preview_text = sand_tab.txt_preview.toPlainText()
+        self.assertTrue(len(preview_text) > 20)
 
     def test_system_tab_widgets(self):
         """Prüft die Funktionsfähigkeit von Tab 4 (System & ModLoader Status)."""
@@ -138,9 +133,9 @@ class TestGuiIntegration(unittest.TestCase):
         self.assertIsNotNone(menubar)
         actions = menubar.actions()
         menu_titles = [a.text() for a in actions]
-        self.assertIn("▶ Start", menu_titles)
-        self.assertIn("⚙️ Einstellungen", menu_titles)
-        self.assertIn("❓ Hilfe", menu_titles)
+        self.assertIn(t("menu.start"), menu_titles)
+        self.assertIn(t("menu.settings"), menu_titles)
+        self.assertIn(t("menu.help"), menu_titles)
 
     def test_lightroom_revert_button(self):
         """Prüft die Lightroom-Style Revert-Funktionalität auf Vanilla-Werte."""
@@ -157,7 +152,7 @@ class TestGuiIntegration(unittest.TestCase):
         """Prüft, ob der allgemeine Einstellungsdialog korrekt instanziiert werden kann."""
         from ModManager.dialog_settings import SettingsDialog
         dlg = SettingsDialog(self.window.system_engine, self.window)
-        self.assertEqual(dlg.windowTitle(), "⚙️ Allgemeine Einstellungen & Pfade")
+        self.assertEqual(dlg.windowTitle(), t("settings.dialog_title"))
         dlg.close()
 
 

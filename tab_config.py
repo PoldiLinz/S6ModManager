@@ -10,10 +10,12 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel,
     QPushButton, QComboBox, QSpinBox, QDoubleSpinBox,
     QTabWidget, QScrollArea, QFrame, QGroupBox, QMessageBox,
-    QInputDialog, QRadioButton, QButtonGroup, QSizePolicy
+    QInputDialog, QRadioButton, QButtonGroup, QSizePolicy,
+    QDialog, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView
 )
 from PyQt6.QtCore import Qt, pyqtSignal
-from typing import Dict, Any, Optional
+import os
+from typing import Dict, Any, Optional, List
 
 from ModManager.engines.config_engine import ConfigEngine
 from ModManager.engines.system_engine import SystemEngine
@@ -67,6 +69,70 @@ VANILLA_DEFAULTS = {
 }
 
 
+# -----------------------------------------------------------------------------
+# Dialog zur Auswahl eines archivierten Mod-Stand-Backups
+# -----------------------------------------------------------------------------
+
+class BbaBackupDialog(QDialog):
+    def __init__(self, backups: List[Dict[str, Any]], parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(t("config_tab.title_load_backup"))
+        self.resize(580, 360)
+        self.selected_path: Optional[str] = None
+        self.backups = backups
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(10)
+
+        self.table = QTableWidget(len(backups), 3)
+        self.table.setHorizontalHeaderLabels([
+            t("config_tab.col_filename"),
+            t("config_tab.col_created"),
+            t("config_tab.col_size"),
+        ])
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+
+        for row, b in enumerate(backups):
+            self.table.setItem(row, 0, QTableWidgetItem(b["filename"]))
+            self.table.setItem(row, 1, QTableWidgetItem(b["created"]))
+            sz_item = QTableWidgetItem(b["size_str"])
+            sz_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            self.table.setItem(row, 2, sz_item)
+
+        self.table.selectRow(0)
+        self.table.doubleClicked.connect(self._on_accept)
+        layout.addWidget(self.table)
+
+        btn_box = QHBoxLayout()
+        btn_box.addStretch()
+
+        btn_cancel = QPushButton(t("config_tab.btn_cancel"))
+        btn_cancel.clicked.connect(self.reject)
+        btn_box.addWidget(btn_cancel)
+
+        btn_load = QPushButton(t("config_tab.btn_load"))
+        btn_load.setObjectName("PrimaryButton")
+        btn_load.clicked.connect(self._on_accept)
+        btn_box.addWidget(btn_load)
+
+        layout.addLayout(btn_box)
+
+    def _on_accept(self):
+        row = self.table.currentRow()
+        if 0 <= row < len(self.backups):
+            self.selected_path = self.backups[row]["path"]
+            self.accept()
+
+    def get_selected_path(self) -> Optional[str]:
+        return self.selected_path
+
+
 class ConfigTab(QWidget):
     """Registerkarte für Spiel-Konfigurationen und Limits."""
 
@@ -112,6 +178,10 @@ class ConfigTab(QWidget):
         btn_save_preset = QPushButton(t("config_tab.btn_save_preset"))
         btn_save_preset.clicked.connect(self._on_save_preset)
         top_layout.addWidget(btn_save_preset)
+
+        btn_load_backup = QPushButton(t("config_tab.btn_load_backup"))
+        btn_load_backup.clicked.connect(self._on_load_backup)
+        top_layout.addWidget(btn_load_backup)
 
         top_layout.addStretch()
 
@@ -672,10 +742,9 @@ class ConfigTab(QWidget):
     def _on_apply_config(self):
         try:
             config = self._collect_data_from_widgets()
-            count = self.config_engine.apply_config_to_modloader(config)
+            count = self.config_engine.apply_configs(config)
             msg = t("config_tab.msg_config_applied").format(count=count)
             self.status_message.emit(msg, "success")
-            QMessageBox.information(self, t("config_tab.btn_apply"), msg)
         except Exception as e:
             err = t("config_tab.msg_config_apply_err").format(err=e)
             self.status_message.emit(err, "error")
@@ -696,7 +765,6 @@ class ConfigTab(QWidget):
                 self._apply_data_to_widgets(active_config)
                 msg = t("config_tab.msg_restore_success").format(count=removed)
                 self.status_message.emit(msg, "warning")
-                QMessageBox.information(self, t("config_tab.title_restore"), msg)
             except Exception as e:
                 err = t("config_tab.msg_restore_err").format(err=e)
                 self.status_message.emit(err, "error")
@@ -719,3 +787,30 @@ class ConfigTab(QWidget):
             self._refresh_presets_combo()
             self._load_initial_preset(filename)
             self.status_message.emit(t("config_tab.msg_save_preset_success").format(filename=filename), "success")
+
+    def _on_load_backup(self):
+        from ModManager.patcher.bba_packer import BBAPacker
+        packer = BBAPacker(self.system.workspace_path)
+        backups = packer.list_bba_backups()
+        if not backups:
+            QMessageBox.information(
+                self,
+                t("config_tab.title_load_backup"),
+                t("config_tab.msg_no_backups_found")
+            )
+            return
+
+        dialog = BbaBackupDialog(backups, self)
+        if dialog.exec():
+            path = dialog.get_selected_path()
+            if path:
+                try:
+                    config = self.config_engine.load_config_from_backup_bba(path)
+                    self._apply_data_to_widgets(config)
+                    filename = os.path.basename(path)
+                    msg = t("config_tab.msg_backup_loaded").format(name=filename)
+                    self.status_message.emit(msg, "success")
+                except Exception as e:
+                    err = t("config_tab.msg_backup_load_err").format(err=e)
+                    self.status_message.emit(err, "error")
+                    QMessageBox.critical(self, t("app.error") if t("app.error") != "app.error" else "Error", err)

@@ -39,8 +39,10 @@ class SystemEngine:
 
         self.game_path = game_path or self._detect_game_path()
         self.modloader_path = os.path.join(self.game_path, "modloader", "shr", "mod")
-        self.original_mods_path = os.path.join(self.workspace_path, "Original", "mod")
+        self.original_mods_path = os.path.join(self.workspace_path, "Original Mod Files")
+        self.base_game_files_path = os.path.join(self.workspace_path, "Original Game Files", "base", "bba")
         self.user_maps_path = self._detect_user_maps_path()
+        self.user_script_path = os.path.join(os.path.dirname(self.user_maps_path), "Script")
         self.presets_path = os.path.join(self.workspace_path, "Presets")
         self.scenarios_path = os.path.join(self.workspace_path, "Scenarios")
         self.backups_path = os.path.join(self.workspace_path, "Backups")
@@ -52,6 +54,8 @@ class SystemEngine:
 
         os.makedirs(self.backups_path, exist_ok=True)
         os.makedirs(self.original_mods_path, exist_ok=True)
+        os.makedirs(self.base_game_files_path, exist_ok=True)
+        os.makedirs(self.user_script_path, exist_ok=True)
 
     def load_settings(self):
         """Lädt benutzerdefinierte Pfade und Einstellungen aus settings.json falls vorhanden."""
@@ -68,8 +72,12 @@ class SystemEngine:
                         self.modloader_path = os.path.normpath(data["modloader_path"])
                     if "original_mods_path" in data and data["original_mods_path"]:
                         self.original_mods_path = os.path.normpath(data["original_mods_path"])
+                    if "base_game_files_path" in data and data["base_game_files_path"]:
+                        self.base_game_files_path = os.path.normpath(data["base_game_files_path"])
                     if "user_maps_path" in data and data["user_maps_path"]:
                         self.user_maps_path = os.path.normpath(data["user_maps_path"])
+                    if "user_script_path" in data and data["user_script_path"]:
+                        self.user_script_path = os.path.normpath(data["user_script_path"])
                     if "presets_path" in data and data["presets_path"]:
                         self.presets_path = os.path.normpath(data["presets_path"])
                     if "language" in data and data["language"]:
@@ -96,7 +104,7 @@ class SystemEngine:
                 except Exception:
                     data = {}
 
-            path_keys = {"game_path", "modloader_path", "original_mods_path", "user_maps_path", "presets_path"}
+            path_keys = {"game_path", "modloader_path", "original_mods_path", "base_game_files_path", "user_maps_path", "user_script_path", "presets_path"}
             for k, v in settings_data.items():
                 if k in path_keys:
                     if v:

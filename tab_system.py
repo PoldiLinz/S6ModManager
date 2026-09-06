@@ -129,6 +129,15 @@ class SystemTab(QWidget):
         sub_tabs.addTab(tab_backups, t("system_tab.tab_backups"))
 
         layout.addWidget(sub_tabs)
+        
+        # 3. Global Reset
+        btn_force_reset = QPushButton(t("system_tab.btn_force_reset"))
+        btn_force_reset.setObjectName("DangerButton")
+        btn_force_reset.clicked.connect(self._on_force_reset)
+        
+        # Add some margin at the bottom
+        layout.addSpacing(10)
+        layout.addWidget(btn_force_reset)
 
     # -------------------------------------------------------------------------
     # Aktualisierung
@@ -266,9 +275,32 @@ class SystemTab(QWidget):
         )
         if reply == QMessageBox.StandardButton.Yes:
             try:
-                if os.path.exists(zip_path):
-                    os.remove(zip_path)
-                self.status_message.emit(t("system_tab.log_backup_deleted"), "warning")
+                os.remove(zip_path)
+                self.status_message.emit(t("system_tab.log_backup_deleted"), "success")
                 self._refresh_backups()
             except Exception as e:
-                QMessageBox.critical(self, t("app.error") if t("app.error") != "app.error" else "Error", str(e))
+                pass
+
+    def _on_force_reset(self):
+        reply = QMessageBox.question(
+            self,
+            t("system_tab.title_force_reset"),
+            t("system_tab.msg_force_reset_prompt"),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            try:
+                # Da SystemTab keinen direkten Zugriff auf ConfigEngine hat, rufen wir es über das parent (MainWindow) auf
+                # Alternativ können wir ConfigEngine hier kurz instanziieren, da es sich alle Pfade aus SystemEngine holt.
+                from ModManager.engines.config_engine import ConfigEngine
+                cfg = ConfigEngine(self.system)
+                count = cfg.restore_vanilla_configs(force_global=True)
+                
+                msg = t("system_tab.msg_force_reset_success").format(count=count)
+                self.status_message.emit(t("system_tab.log_force_reset"), "success")
+                QMessageBox.information(self, t("system_tab.title_force_reset"), msg)
+                self.refresh_all()
+            except Exception as e:
+                err = f"Error during Global Reset: {e}"
+                self.status_message.emit(err, "error")
+                QMessageBox.critical(self, t("app.error") if t("app.error") != "app.error" else "Error", err)

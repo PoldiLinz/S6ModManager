@@ -283,6 +283,51 @@ QPushButton#DangerButton:hover {
     color: #ffa4a4;
 }
 
+/* Header Game Launcher Buttons */
+QPushButton#HeaderLaunchBase, QPushButton#HeaderLaunchAddon {
+    min-width: 160px;
+}
+
+QPushButton#HeaderLaunchBase {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2c2517, stop:1 #1e1910);
+    color: #f0c34e;
+    border: 1px solid #d4a024;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+QPushButton#HeaderLaunchBase:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3d321d, stop:1 #282012);
+    border-color: #fde047;
+    color: #ffffff;
+}
+
+QPushButton#HeaderLaunchBase:pressed {
+    background-color: #17130b;
+}
+
+QPushButton#HeaderLaunchAddon {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #342410, stop:1 #24180a);
+    color: #fbbf24;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+QPushButton#HeaderLaunchAddon:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #4a3416, stop:1 #32220d);
+    border-color: #fef08a;
+    color: #ffffff;
+}
+
+QPushButton#HeaderLaunchAddon:pressed {
+    background-color: #1a1005;
+}
+
 /* Vanilla Referenzwert Badge */
 QLabel#VanillaBadge {
     background-color: #14171e;

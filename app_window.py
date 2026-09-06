@@ -5,14 +5,15 @@ Verbindet alle 4 Registerkarten, Header-Statusanzeigen und Live-Log-Konsole.
 
 import os
 import sys
+import subprocess
 from datetime import datetime
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QTabWidget, QFrame, QPlainTextEdit, QStatusBar, QPushButton,
-    QMessageBox, QInputDialog, QSizePolicy
+    QMessageBox, QInputDialog, QSizePolicy, QApplication
 )
-from PyQt6.QtCore import Qt, pyqtSlot, QProcess
-from PyQt6.QtGui import QCloseEvent
+from PyQt6.QtCore import Qt, pyqtSlot, QProcess, QThread, pyqtSignal, QTimer
+from PyQt6.QtGui import QCloseEvent, QIcon
 
 from ModManager.engines.system_engine import SystemEngine
 from ModManager.engines.config_engine import ConfigEngine
@@ -25,6 +26,25 @@ from ModManager.tab_scenarios import ScenarioTab
 from ModManager.tab_sandbox import SandboxTab
 from ModManager.tab_system import SystemTab
 from ModManager.dialog_settings import SettingsDialog
+
+
+class GameProcessWatcher(QThread):
+    """Hintergrund-Thread, der auf das Beenden des Spielprozesses wartet, ohne die GUI zu blockieren."""
+    game_finished = pyqtSignal(int)
+
+    def __init__(self, exe_path: str, cwd: str, parent=None):
+        super().__init__(parent)
+        self.exe_path = exe_path
+        self.cwd = cwd
+
+    def run(self):
+        try:
+            proc = subprocess.Popen([self.exe_path], cwd=self.cwd)
+            ret = proc.wait()
+            self.game_finished.emit(ret)
+        except Exception as e:
+            print(f"[Error] Game process failed to run: {e}")
+            self.game_finished.emit(-1)
 
 
 class MainWindow(QMainWindow):
@@ -44,6 +64,7 @@ class MainWindow(QMainWindow):
 
         self._tab_loaded = {}  # Tracking: welche Tabs wurden bereits geladen?
         self._init_ui()
+        self._apply_windows_taskbar_icon()
         self.log(t("app.initialized"), "info")
         self._update_header_status()
 
@@ -74,6 +95,23 @@ class MainWindow(QMainWindow):
         h_layout.addLayout(v_title)
 
         h_layout.addStretch()
+
+        # Direkt-Start Buttons für Hauptspiel & Addon
+        self.btn_launch_base = QPushButton("👑 " + t("app.btn_launch_base"))
+        self.btn_launch_base.setObjectName("HeaderLaunchBase")
+        self.btn_launch_base.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_launch_base.setToolTip(t("app.tt_launch_base"))
+        self.btn_launch_base.clicked.connect(lambda: self._launch_game(is_addon=False))
+        h_layout.addWidget(self.btn_launch_base)
+
+        self.btn_launch_addon = QPushButton("✨ " + t("app.btn_launch_addon"))
+        self.btn_launch_addon.setObjectName("HeaderLaunchAddon")
+        self.btn_launch_addon.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_launch_addon.setToolTip(t("app.tt_launch_addon"))
+        self.btn_launch_addon.clicked.connect(lambda: self._launch_game(is_addon=True))
+        h_layout.addWidget(self.btn_launch_addon)
+
+        h_layout.addSpacing(20)
 
         # Global Status Pill
         self.lbl_global_status = QLabel()
@@ -151,17 +189,113 @@ class MainWindow(QMainWindow):
         self.lbl_global_status.style().polish(self.lbl_global_status)
 
     def _on_tab_changed(self, index: int):
-        self._update_header_status()
-        # Nur neu laden wenn Tab noch nicht initial geladen wurde
+        """Wird ausgelöst, wenn der Benutzer einen Tab wechselt."""
         if index == 1 and not self._tab_loaded.get(1):
             self.tab_scenarios.refresh_maps()
             self._tab_loaded[1] = True
         elif index == 2 and not self._tab_loaded.get(2):
-            self.tab_sandbox.refresh_maps()
+            self.tab_sandbox.refresh_ui()
             self._tab_loaded[2] = True
         elif index == 3 and not self._tab_loaded.get(3):
             self.tab_system.refresh_all()
             self._tab_loaded[3] = True
+
+    def _launch_game(self, is_addon: bool):
+        """Startet das Hauptspiel oder das Addon, blendet den Mod Manager aus und stellt ihn nach Spielende wieder her."""
+        game_dir = self.system_engine.game_path
+        if is_addon:
+            game_name = t("app.game_name_addon")
+            candidates = [
+                os.path.join(game_dir, "extra1", "bin", "Settlers6.exe"),
+                os.path.join(game_dir, "Play Settlers 6 - The Eastern Realm.exe")
+            ]
+        else:
+            game_name = t("app.game_name_base")
+            candidates = [
+                os.path.join(game_dir, "base", "bin", "Settlers6.exe"),
+                os.path.join(game_dir, "Play Settlers 6.exe")
+            ]
+
+        target_exe = None
+        for c in candidates:
+            if os.path.exists(c):
+                target_exe = c
+                break
+
+        if not target_exe:
+            err_msg = t("app.err_game_not_found").format(path=candidates[0])
+            self.log(err_msg, "error")
+            QMessageBox.critical(self, t("app.error"), err_msg)
+            return
+
+        working_dir = os.path.dirname(target_exe)
+        self.log(t("app.msg_game_starting").format(name=game_name), "info")
+
+        # Fenster ausblenden
+        self.hide()
+
+        # Hintergrund-Überwachung starten
+        self._game_watcher = GameProcessWatcher(target_exe, working_dir, self)
+        self._game_watcher.game_finished.connect(self._on_game_finished)
+        self._game_watcher.start()
+
+    def _apply_windows_taskbar_icon(self):
+        """Sendet explizit WM_SETICON (Small & Big) via Win32 API direkt an das HWND,
+        damit die Windows 10/11 Shell-Taskleiste das Icon auch nach hide()/show() zuverlaessig anzeigt."""
+        if sys.platform != "win32":
+            return
+        try:
+            import ctypes
+            user32 = ctypes.windll.user32
+            WM_SETICON = 0x0080
+            ICON_SMALL = 0
+            ICON_BIG = 1
+            IMAGE_ICON = 1
+            LR_LOADFROMFILE = 0x00000010
+
+            icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "assets", "icon.ico"))
+            if not os.path.exists(icon_path):
+                return
+
+            hwnd = int(self.winId())
+            hicon_small = user32.LoadImageW(None, icon_path, IMAGE_ICON, 16, 16, LR_LOADFROMFILE)
+            hicon_big = user32.LoadImageW(None, icon_path, IMAGE_ICON, 32, 32, LR_LOADFROMFILE)
+            if hicon_small:
+                user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon_small)
+            if hicon_big:
+                user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon_big)
+        except Exception as e:
+            print(f"[Warning] Failed to apply native Win32 icon: {e}")
+
+    def _on_game_finished(self, exit_code: int):
+        """Wird automatisch aufgerufen, sobald der Spielprozess beendet wurde."""
+        # 1. Fenster wiederherstellen
+        self.show()
+        self.setWindowState(self.windowState() & ~Qt.WindowState.WindowMinimized | Qt.WindowState.WindowActive)
+        self.raise_()
+        self.activateWindow()
+
+        # 2. Qt-Icon auf Window und Application setzen
+        icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "assets", "icon.ico"))
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+            app_inst = QApplication.instance()
+            if app_inst:
+                app_inst.setWindowIcon(QIcon(icon_path))
+
+        # 3. Natives Win32 WM_SETICON an HWND senden (sofort und zeitverzoegert nach DWM Taskbar Re-registration)
+        self._apply_windows_taskbar_icon()
+        QTimer.singleShot(150, self._apply_windows_taskbar_icon)
+        QTimer.singleShot(500, self._apply_windows_taskbar_icon)
+
+        self.log(t("app.msg_game_closed").format(code=exit_code), "success" if exit_code == 0 else "info")
+
+        # Nach Spielende: Aktive ModLoader-Konfiguration neu einlesen
+        try:
+            active_config = self.config_engine.read_active_config_from_modloader()
+            self.tab_config._apply_data_to_widgets(active_config)
+        except Exception:
+            pass
 
     @pyqtSlot(str, str)
     def log(self, message: str, level: str = "info"):
