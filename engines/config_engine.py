@@ -41,11 +41,16 @@ class ConfigEngine:
                 "storehouse_capacities": [250, 500, 1000, 2000],
                 "storehouse_max_amount_on_stock": 100,
                 "storehouse_upgrade_gold": [150, 250, 500],
+                "storehouse_upgrade_stone": [20, 40, 60],
                 "castle_soldier_limits": [25, 43, 61, 91],
                 "castle_treasury_capacities": [99000, 99000, 99000, 99000],
                 "castle_hitpoints": [750, 1500, 2250, 3000],
+                "castle_upgrade_gold": [150, 250, 500],
+                "castle_upgrade_stone": [25, 50, 75],
                 "cathedral_sermon_limits": [10, 15, 30, 60],
                 "cathedral_prestige_points": [100, 200, 400],
+                "cathedral_upgrade_gold": [150, 250, 500],
+                "cathedral_upgrade_stone": [20, 40, 60],
                 "mine_stone_capacity": 250,
                 "mine_iron_capacity": 250,
                 "well_water_refill_rate": 0.5,
@@ -163,6 +168,24 @@ class ConfigEngine:
             config["settler_limits"] = [50, 50, 100, 150, 200, 200]
             config["road_speed_modifier"] = 1.25
 
+        def _read_upgrade_costs(elem, default_gold, default_stone):
+            if elem is None:
+                return default_gold, default_stone
+            g_list, s_list = [], []
+            for uc in elem.findall(".//UpgradeCost"):
+                for ga in uc.findall("GoodAmount"):
+                    gt = ga.find("GoodType")
+                    amt = ga.find("Amount")
+                    if gt is not None and amt is not None:
+                        try:
+                            if gt.text == "G_Gold":
+                                g_list.append(int(amt.text))
+                            elif gt.text == "G_Stone":
+                                s_list.append(int(amt.text))
+                        except (ValueError, TypeError):
+                            pass
+            return (g_list if g_list else default_gold), (s_list if s_list else default_stone)
+
         # 2. b_storehouse.xml
         store = _read_temp_xml(os.path.normpath("config/entities/b_storehouse.xml"))
         if store is not None:
@@ -172,21 +195,12 @@ class ConfigEngine:
             config["storehouse_max_amount_on_stock"] = self._read_xml_text(
                 store, ".//MaxAmountOnStock", 100
             )
-            gold_amounts = []
-            for uc in store.findall(".//UpgradeCost"):
-                for ga in uc.findall("GoodAmount"):
-                    gt = ga.find("GoodType")
-                    amt = ga.find("Amount")
-                    if gt is not None and gt.text == "G_Gold" and amt is not None:
-                        try:
-                            gold_amounts.append(int(amt.text))
-                        except (ValueError, TypeError):
-                            pass
-            config["storehouse_upgrade_gold"] = gold_amounts if gold_amounts else [150, 250, 500]
         else:
             config["storehouse_capacities"] = [250, 500, 1000, 2000]
             config["storehouse_max_amount_on_stock"] = 100
-            config["storehouse_upgrade_gold"] = [150, 250, 500]
+        g_s, s_s = _read_upgrade_costs(store, [150, 250, 500], [20, 40, 60])
+        config["storehouse_upgrade_gold"] = g_s
+        config["storehouse_upgrade_stone"] = s_s
 
         # 3. Castle (verwende b_castle_me.xml als Referenz)
         castle = _read_temp_xml(os.path.normpath("config/entities/b_castle_me.xml"))
@@ -204,6 +218,9 @@ class ConfigEngine:
             config["castle_soldier_limits"] = [25, 43, 61, 91]
             config["castle_treasury_capacities"] = [99000, 99000, 99000, 99000]
             config["castle_hitpoints"] = [750, 1500, 2250, 3000]
+        g_c, s_c = _read_upgrade_costs(castle, [150, 250, 500], [25, 50, 75])
+        config["castle_upgrade_gold"] = g_c
+        config["castle_upgrade_stone"] = s_c
 
         # 4. Cathedral (b_cathedral.xml als Referenz)
         cath = _read_temp_xml(os.path.normpath("config/entities/b_cathedral.xml"))
@@ -217,6 +234,9 @@ class ConfigEngine:
         else:
             config["cathedral_sermon_limits"] = [10, 15, 30, 60]
             config["cathedral_prestige_points"] = [100, 200, 400]
+        g_cath, s_cath = _read_upgrade_costs(cath, [150, 250, 500], [20, 40, 60])
+        config["cathedral_upgrade_gold"] = g_cath
+        config["cathedral_upgrade_stone"] = s_cath
 
         # 5. Minen
         stone = _read_temp_xml(os.path.normpath("config/entities/r_stonemine.xml"))

@@ -30,6 +30,14 @@ VANILLA_DEFAULTS = {
     "settler_3": 150,
     "settler_4": 200,
 
+    # Kathedrale Upgrade-Kosten
+    "cath_gold_2": 150,
+    "cath_gold_3": 250,
+    "cath_gold_4": 500,
+    "cath_stone_2": 20,
+    "cath_stone_3": 40,
+    "cath_stone_4": 60,
+
     # Lagerhaus
     "store_1": 250,
     "store_2": 500,
@@ -37,6 +45,12 @@ VANILLA_DEFAULTS = {
     "store_4": 2000,
     "store_max": 100,
     "store_gold": 500,
+    "store_gold_2": 150,
+    "store_gold_3": 250,
+    "store_gold_4": 500,
+    "store_stone_2": 20,
+    "store_stone_3": 40,
+    "store_stone_4": 60,
 
     # Burg & Schloss
     "castle_soldier_1": 25,
@@ -45,6 +59,12 @@ VANILLA_DEFAULTS = {
     "castle_soldier_4": 91,
     "castle_treasury": 99000,
     "castle_hp": 3000,
+    "castle_gold_2": 150,
+    "castle_gold_3": 250,
+    "castle_gold_4": 500,
+    "castle_stone_2": 25,
+    "castle_stone_3": 50,
+    "castle_stone_4": 75,
 
     # Kathedrale
     "cath_sermon": 60,
@@ -213,6 +233,118 @@ class ConfigTab(QWidget):
     # Layout- und Einstellungs-Hilfsmethoden
     # -------------------------------------------------------------------------
 
+    def _setup_matrix_grid(self, box: QGroupBox, main_col_title: str) -> QGridLayout:
+        """Erstellt ein 10-Spalten Matrix-Grid:
+        Col 0: Stufe Label
+        Col 1..3: Hauptwert [Spin | Badge | Revert]
+        Col 4..6: Upgrade Gold [Spin | Badge | Revert]
+        Col 7..9: Upgrade Stein [Spin | Badge | Revert]
+        Col 10: Stretch
+        """
+        grid = QGridLayout(box)
+        grid.setHorizontalSpacing(8)
+        grid.setVerticalSpacing(6)
+        grid.setContentsMargins(14, 16, 14, 14)
+
+        for col in range(10):
+            grid.setColumnStretch(col, 0)
+        grid.setColumnStretch(10, 1)
+
+        # Header Row 0: Hauptspalten-Titel
+        lbl_stage = QLabel(t("config_tab.col_stage"))
+        lbl_stage.setObjectName("MatrixHeader")
+        lbl_stage.setMinimumWidth(130)
+        grid.addWidget(lbl_stage, 0, 0)
+
+        lbl_main = QLabel(main_col_title)
+        lbl_main.setObjectName("MatrixHeader")
+        lbl_main.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        grid.addWidget(lbl_main, 0, 1, 1, 3)
+
+        lbl_gold = QLabel(t("config_tab.col_cost_gold"))
+        lbl_gold.setObjectName("MatrixHeader")
+        lbl_gold.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        grid.addWidget(lbl_gold, 0, 4, 1, 3)
+
+        lbl_stone = QLabel(t("config_tab.col_cost_stone"))
+        lbl_stone.setObjectName("MatrixHeader")
+        lbl_stone.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        grid.addWidget(lbl_stone, 0, 7, 1, 3)
+
+        # Header Row 1: Sub-Header für Modded, Vanilla, ↺
+        for c_start in (1, 4, 7):
+            lbl_m = QLabel("Modded")
+            lbl_m.setObjectName("MatrixSubHeader")
+            lbl_m.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            grid.addWidget(lbl_m, 1, c_start)
+
+            lbl_v = QLabel("Vanilla")
+            lbl_v.setObjectName("MatrixSubHeader")
+            lbl_v.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            grid.addWidget(lbl_v, 1, c_start + 1)
+
+            lbl_r = QLabel("↺")
+            lbl_r.setObjectName("MatrixSubHeader")
+            lbl_r.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            grid.addWidget(lbl_r, 1, c_start + 2)
+
+        return grid
+
+    def _add_matrix_triplet(
+        self,
+        grid: QGridLayout,
+        row: int,
+        col_start: int,
+        spin_widget: QSpinBox | QDoubleSpinBox,
+        vanilla_val: int | float,
+        spin_width: int = 80,
+        badge_width: int = 54
+    ) -> QPushButton:
+        """Fügt ein Modding-Triplet [SpinBox | VanillaBadge | RevertBtn] an (row, col_start) ein."""
+        spin_widget.setFixedWidth(spin_width)
+        grid.addWidget(spin_widget, row, col_start)
+
+        val_str = f"{vanilla_val:g}" if isinstance(vanilla_val, float) else str(vanilla_val)
+        lbl_vanilla = QLabel(val_str)
+        lbl_vanilla.setObjectName("VanillaBadge")
+        lbl_vanilla.setToolTip(t("config_tab.tt_vanilla_badge").format(val_str=val_str))
+        lbl_vanilla.setFixedWidth(badge_width)
+        lbl_vanilla.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        grid.addWidget(lbl_vanilla, row, col_start + 1)
+
+        btn_revert = QPushButton("↺")
+        btn_revert.setObjectName("RevertBtn")
+        btn_revert.setToolTip(t("config_tab.tt_revert_btn").format(val_str=val_str))
+        btn_revert.setFixedSize(26, 24)
+        btn_revert.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        def update_revert_state():
+            cur = spin_widget.value()
+            is_mod = abs(cur - vanilla_val) > 1e-4
+            mod_str = "true" if is_mod else "false"
+            btn_revert.setProperty("modified", mod_str)
+            btn_revert.style().unpolish(btn_revert)
+            btn_revert.style().polish(btn_revert)
+            spin_widget.setProperty("modified", mod_str)
+            spin_widget.style().unpolish(spin_widget)
+            spin_widget.style().polish(spin_widget)
+            spin_widget.update()
+
+        spin_widget.valueChanged.connect(lambda *_: update_revert_state())
+        btn_revert.clicked.connect(lambda *_: spin_widget.setValue(vanilla_val))
+
+        update_revert_state()
+        grid.addWidget(btn_revert, row, col_start + 2)
+
+        return btn_revert
+
+    def _add_matrix_dash(self, grid: QGridLayout, row: int, col_start: int):
+        """Fügt einen dezenten Platzhalter-Strich über 3 Spalten ein (z. B. für Stufe 1 ohne Upgradekosten)."""
+        lbl = QLabel("—")
+        lbl.setObjectName("MatrixDash")
+        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        grid.addWidget(lbl, row, col_start, 1, 3)
+
     def _setup_grid(self, box: QGroupBox) -> QGridLayout:
         """Erstellt ein standardisiertes 1-Spalten-Block Grid-Layout als Tabelle mit Headern."""
         grid = QGridLayout(box)
@@ -330,77 +462,183 @@ class ConfigTab(QWidget):
         layout.setSpacing(12)
         layout.setContentsMargins(6, 6, 6, 6)
 
-        # A. Siedlerlimit
+        # A. Siedlerlimit & Kathedralen-Ausbau
         box_settlers = QGroupBox(t("config_tab.group_settlers"))
-        g_settlers = self._setup_grid(box_settlers)
+        g_settlers = self._setup_matrix_grid(box_settlers, t("config_tab.col_settlers"))
 
-        self.spin_settler_1 = self._create_spin(50, 2000, 100, 10)
-        self.btn_revert_settler_1 = self._add_setting_item(g_settlers, 0, 0, t("config_tab.settler_1"), self.spin_settler_1, VANILLA_DEFAULTS["settler_1"])
+        # Stufe 1 (Basis)
+        lbl_s1 = QLabel(t("config_tab.stage_1"))
+        lbl_s1.setMinimumWidth(130)
+        g_settlers.addWidget(lbl_s1, 2, 0)
+        self.spin_settler_1 = self._create_spin(50, 2000, 50, 10)
+        self.btn_revert_settler_1 = self._add_matrix_triplet(g_settlers, 2, 1, self.spin_settler_1, VANILLA_DEFAULTS["settler_1"])
+        self._add_matrix_dash(g_settlers, 2, 4)
+        self._add_matrix_dash(g_settlers, 2, 7)
 
-        self.spin_settler_2 = self._create_spin(50, 3000, 300, 25)
-        self._add_setting_item(g_settlers, 1, 0, t("config_tab.settler_2"), self.spin_settler_2, VANILLA_DEFAULTS["settler_2"])
+        # Stufe 2
+        lbl_s2 = QLabel(t("config_tab.stage_2"))
+        lbl_s2.setMinimumWidth(130)
+        g_settlers.addWidget(lbl_s2, 3, 0)
+        self.spin_settler_2 = self._create_spin(50, 3000, 100, 25)
+        self._add_matrix_triplet(g_settlers, 3, 1, self.spin_settler_2, VANILLA_DEFAULTS["settler_2"])
+        self.spin_cath_gold_2 = self._create_spin(0, 10000, 150, 25)
+        self._add_matrix_triplet(g_settlers, 3, 4, self.spin_cath_gold_2, VANILLA_DEFAULTS["cath_gold_2"])
+        self.spin_cath_stone_2 = self._create_spin(0, 1000, 20, 5)
+        self._add_matrix_triplet(g_settlers, 3, 7, self.spin_cath_stone_2, VANILLA_DEFAULTS["cath_stone_2"])
 
-        self.spin_settler_3 = self._create_spin(50, 4000, 500, 50)
-        self._add_setting_item(g_settlers, 2, 0, t("config_tab.settler_3"), self.spin_settler_3, VANILLA_DEFAULTS["settler_3"])
+        # Stufe 3
+        lbl_s3 = QLabel(t("config_tab.stage_3"))
+        lbl_s3.setMinimumWidth(130)
+        g_settlers.addWidget(lbl_s3, 4, 0)
+        self.spin_settler_3 = self._create_spin(50, 4000, 150, 50)
+        self._add_matrix_triplet(g_settlers, 4, 1, self.spin_settler_3, VANILLA_DEFAULTS["settler_3"])
+        self.spin_cath_gold_3 = self._create_spin(0, 10000, 250, 25)
+        self._add_matrix_triplet(g_settlers, 4, 4, self.spin_cath_gold_3, VANILLA_DEFAULTS["cath_gold_3"])
+        self.spin_cath_stone_3 = self._create_spin(0, 1000, 40, 5)
+        self._add_matrix_triplet(g_settlers, 4, 7, self.spin_cath_stone_3, VANILLA_DEFAULTS["cath_stone_3"])
 
-        self.spin_settler_4 = self._create_spin(50, 5000, 800, 100)
-        self._add_setting_item(g_settlers, 3, 0, t("config_tab.settler_4"), self.spin_settler_4, VANILLA_DEFAULTS["settler_4"])
+        # Stufe 4 (Max)
+        lbl_s4 = QLabel(t("config_tab.stage_4"))
+        lbl_s4.setMinimumWidth(130)
+        g_settlers.addWidget(lbl_s4, 5, 0)
+        self.spin_settler_4 = self._create_spin(50, 5000, 200, 50)
+        self._add_matrix_triplet(g_settlers, 5, 1, self.spin_settler_4, VANILLA_DEFAULTS["settler_4"])
+        self.spin_cath_gold_4 = self._create_spin(0, 10000, 500, 50)
+        self._add_matrix_triplet(g_settlers, 5, 4, self.spin_cath_gold_4, VANILLA_DEFAULTS["cath_gold_4"])
+        self.spin_cath_stone_4 = self._create_spin(0, 1000, 60, 5)
+        self._add_matrix_triplet(g_settlers, 5, 7, self.spin_cath_stone_4, VANILLA_DEFAULTS["cath_stone_4"])
 
         lbl_settler_info = QLabel(t("config_tab.settler_hint"))
         lbl_settler_info.setObjectName("DimLabel")
-        g_settlers.addWidget(lbl_settler_info, 5, 0, 1, 5)
+        g_settlers.addWidget(lbl_settler_info, 6, 0, 1, 10)
 
         layout.addWidget(box_settlers)
 
         # B. Lagerhaus
         box_store = QGroupBox(t("config_tab.group_storehouse"))
-        g_store = self._setup_grid(box_store)
+        g_store = self._setup_matrix_grid(box_store, t("config_tab.col_capacity"))
 
+        # Stufe 1 (Basis)
+        lbl_st1 = QLabel(t("config_tab.stage_1"))
+        lbl_st1.setMinimumWidth(130)
+        g_store.addWidget(lbl_st1, 2, 0)
         self.spin_store_1 = self._create_spin(50, 10000, 250, 25)
-        self._add_setting_item(g_store, 0, 0, t("config_tab.store_1"), self.spin_store_1, VANILLA_DEFAULTS["store_1"])
+        self._add_matrix_triplet(g_store, 2, 1, self.spin_store_1, VANILLA_DEFAULTS["store_1"])
+        self._add_matrix_dash(g_store, 2, 4)
+        self._add_matrix_dash(g_store, 2, 7)
 
+        # Stufe 2
+        lbl_st2 = QLabel(t("config_tab.stage_2"))
+        lbl_st2.setMinimumWidth(130)
+        g_store.addWidget(lbl_st2, 3, 0)
         self.spin_store_2 = self._create_spin(50, 10000, 500, 50)
-        self._add_setting_item(g_store, 1, 0, t("config_tab.store_2"), self.spin_store_2, VANILLA_DEFAULTS["store_2"])
+        self._add_matrix_triplet(g_store, 3, 1, self.spin_store_2, VANILLA_DEFAULTS["store_2"])
+        self.spin_store_gold_2 = self._create_spin(0, 10000, 150, 25)
+        self._add_matrix_triplet(g_store, 3, 4, self.spin_store_gold_2, VANILLA_DEFAULTS["store_gold_2"])
+        self.spin_store_stone_2 = self._create_spin(0, 1000, 20, 5)
+        self._add_matrix_triplet(g_store, 3, 7, self.spin_store_stone_2, VANILLA_DEFAULTS["store_stone_2"])
 
+        # Stufe 3
+        lbl_st3 = QLabel(t("config_tab.stage_3"))
+        lbl_st3.setMinimumWidth(130)
+        g_store.addWidget(lbl_st3, 4, 0)
         self.spin_store_3 = self._create_spin(50, 10000, 1000, 100)
-        self._add_setting_item(g_store, 2, 0, t("config_tab.store_3"), self.spin_store_3, VANILLA_DEFAULTS["store_3"])
+        self._add_matrix_triplet(g_store, 4, 1, self.spin_store_3, VANILLA_DEFAULTS["store_3"])
+        self.spin_store_gold_3 = self._create_spin(0, 10000, 250, 25)
+        self._add_matrix_triplet(g_store, 4, 4, self.spin_store_gold_3, VANILLA_DEFAULTS["store_gold_3"])
+        self.spin_store_stone_3 = self._create_spin(0, 1000, 40, 5)
+        self._add_matrix_triplet(g_store, 4, 7, self.spin_store_stone_3, VANILLA_DEFAULTS["store_stone_3"])
 
+        # Stufe 4 (Max)
+        lbl_st4 = QLabel(t("config_tab.stage_4"))
+        lbl_st4.setMinimumWidth(130)
+        g_store.addWidget(lbl_st4, 5, 0)
         self.spin_store_4 = self._create_spin(50, 10000, 2000, 100)
-        self._add_setting_item(g_store, 3, 0, t("config_tab.store_4"), self.spin_store_4, VANILLA_DEFAULTS["store_4"])
+        self._add_matrix_triplet(g_store, 5, 1, self.spin_store_4, VANILLA_DEFAULTS["store_4"])
+        self.spin_store_gold_4 = self._create_spin(0, 10000, 500, 50)
+        self.spin_store_gold = self.spin_store_gold_4
+        self._add_matrix_triplet(g_store, 5, 4, self.spin_store_gold_4, VANILLA_DEFAULTS["store_gold_4"])
+        self.spin_store_stone_4 = self._create_spin(0, 1000, 60, 5)
+        self._add_matrix_triplet(g_store, 5, 7, self.spin_store_stone_4, VANILLA_DEFAULTS["store_stone_4"])
 
+        # Horizontale Trennlinie und Warenstapel-Limit
+        sep_store = QFrame()
+        sep_store.setFrameShape(QFrame.Shape.HLine)
+        sep_store.setStyleSheet("color: #272d3b; margin-top: 4px; margin-bottom: 4px;")
+        g_store.addWidget(sep_store, 6, 0, 1, 10)
+
+        lbl_max = QLabel(t("config_tab.store_max"))
+        g_store.addWidget(lbl_max, 7, 0)
         self.spin_store_max = self._create_spin(10, 1000, 100, 10)
-        self._add_setting_item(g_store, 4, 0, t("config_tab.store_max"), self.spin_store_max, VANILLA_DEFAULTS["store_max"])
-
-        self.spin_store_gold = self._create_spin(0, 5000, 500, 50)
-        self._add_setting_item(g_store, 5, 0, t("config_tab.store_gold"), self.spin_store_gold, VANILLA_DEFAULTS["store_gold"])
+        self._add_matrix_triplet(g_store, 7, 1, self.spin_store_max, VANILLA_DEFAULTS["store_max"])
 
         layout.addWidget(box_store)
 
         # C. Burg / Schloss
         box_castle = QGroupBox(t("config_tab.group_castle"))
-        g_castle = self._setup_grid(box_castle)
+        g_castle = self._setup_matrix_grid(box_castle, t("config_tab.col_soldiers"))
 
-        self.spin_castle_soldier_1 = self._create_spin(5, 500, 30, 5)
-        self._add_setting_item(g_castle, 0, 0, t("config_tab.castle_soldier_1"), self.spin_castle_soldier_1, VANILLA_DEFAULTS["castle_soldier_1"])
+        # Stufe 1 (Basis)
+        lbl_c1 = QLabel(t("config_tab.stage_1"))
+        lbl_c1.setMinimumWidth(130)
+        g_castle.addWidget(lbl_c1, 2, 0)
+        self.spin_castle_soldier_1 = self._create_spin(5, 500, 25, 5)
+        self._add_matrix_triplet(g_castle, 2, 1, self.spin_castle_soldier_1, VANILLA_DEFAULTS["castle_soldier_1"])
+        self._add_matrix_dash(g_castle, 2, 4)
+        self._add_matrix_dash(g_castle, 2, 7)
 
-        self.spin_castle_soldier_2 = self._create_spin(5, 500, 55, 5)
-        self._add_setting_item(g_castle, 1, 0, t("config_tab.castle_soldier_2"), self.spin_castle_soldier_2, VANILLA_DEFAULTS["castle_soldier_2"])
+        # Stufe 2
+        lbl_c2 = QLabel(t("config_tab.stage_2"))
+        lbl_c2.setMinimumWidth(130)
+        g_castle.addWidget(lbl_c2, 3, 0)
+        self.spin_castle_soldier_2 = self._create_spin(5, 500, 43, 5)
+        self._add_matrix_triplet(g_castle, 3, 1, self.spin_castle_soldier_2, VANILLA_DEFAULTS["castle_soldier_2"])
+        self.spin_castle_gold_2 = self._create_spin(0, 10000, 150, 25)
+        self._add_matrix_triplet(g_castle, 3, 4, self.spin_castle_gold_2, VANILLA_DEFAULTS["castle_gold_2"])
+        self.spin_castle_stone_2 = self._create_spin(0, 1000, 25, 5)
+        self._add_matrix_triplet(g_castle, 3, 7, self.spin_castle_stone_2, VANILLA_DEFAULTS["castle_stone_2"])
 
-        self.spin_castle_soldier_3 = self._create_spin(5, 500, 85, 5)
-        self._add_setting_item(g_castle, 2, 0, t("config_tab.castle_soldier_3"), self.spin_castle_soldier_3, VANILLA_DEFAULTS["castle_soldier_3"])
+        # Stufe 3
+        lbl_c3 = QLabel(t("config_tab.stage_3"))
+        lbl_c3.setMinimumWidth(130)
+        g_castle.addWidget(lbl_c3, 4, 0)
+        self.spin_castle_soldier_3 = self._create_spin(5, 500, 61, 5)
+        self._add_matrix_triplet(g_castle, 4, 1, self.spin_castle_soldier_3, VANILLA_DEFAULTS["castle_soldier_3"])
+        self.spin_castle_gold_3 = self._create_spin(0, 10000, 250, 25)
+        self._add_matrix_triplet(g_castle, 4, 4, self.spin_castle_gold_3, VANILLA_DEFAULTS["castle_gold_3"])
+        self.spin_castle_stone_3 = self._create_spin(0, 1000, 50, 5)
+        self._add_matrix_triplet(g_castle, 4, 7, self.spin_castle_stone_3, VANILLA_DEFAULTS["castle_stone_3"])
 
-        self.spin_castle_soldier_4 = self._create_spin(5, 500, 130, 10)
-        self._add_setting_item(g_castle, 3, 0, t("config_tab.castle_soldier_4"), self.spin_castle_soldier_4, VANILLA_DEFAULTS["castle_soldier_4"])
+        # Stufe 4 (Max)
+        lbl_c4 = QLabel(t("config_tab.stage_4"))
+        lbl_c4.setMinimumWidth(130)
+        g_castle.addWidget(lbl_c4, 5, 0)
+        self.spin_castle_soldier_4 = self._create_spin(5, 500, 91, 10)
+        self._add_matrix_triplet(g_castle, 5, 1, self.spin_castle_soldier_4, VANILLA_DEFAULTS["castle_soldier_4"])
+        self.spin_castle_gold_4 = self._create_spin(0, 10000, 500, 50)
+        self._add_matrix_triplet(g_castle, 5, 4, self.spin_castle_gold_4, VANILLA_DEFAULTS["castle_gold_4"])
+        self.spin_castle_stone_4 = self._create_spin(0, 1000, 75, 5)
+        self._add_matrix_triplet(g_castle, 5, 7, self.spin_castle_stone_4, VANILLA_DEFAULTS["castle_stone_4"])
 
+        # Horizontale Trennlinie und Schatzkammer / HP
+        sep_castle = QFrame()
+        sep_castle.setFrameShape(QFrame.Shape.HLine)
+        sep_castle.setStyleSheet("color: #272d3b; margin-top: 4px; margin-bottom: 4px;")
+        g_castle.addWidget(sep_castle, 6, 0, 1, 10)
+
+        lbl_treasury = QLabel(t("config_tab.castle_treasury"))
+        g_castle.addWidget(lbl_treasury, 7, 0)
         self.spin_castle_treasury = self._create_spin(5000, 99000, 99000, 5000)
-        self._add_setting_item(g_castle, 4, 0, t("config_tab.castle_treasury"), self.spin_castle_treasury, VANILLA_DEFAULTS["castle_treasury"])
+        self._add_matrix_triplet(g_castle, 7, 1, self.spin_castle_treasury, VANILLA_DEFAULTS["castle_treasury"])
 
-        self.spin_castle_hp = self._create_spin(500, 20000, 5000, 500)
-        self._add_setting_item(g_castle, 5, 0, t("config_tab.castle_hp"), self.spin_castle_hp, VANILLA_DEFAULTS["castle_hp"])
+        lbl_hp = QLabel(t("config_tab.castle_hp"))
+        g_castle.addWidget(lbl_hp, 8, 0)
+        self.spin_castle_hp = self._create_spin(500, 20000, 3000, 500)
+        self._add_matrix_triplet(g_castle, 8, 1, self.spin_castle_hp, VANILLA_DEFAULTS["castle_hp"])
 
         layout.addWidget(box_castle)
 
-        # D. Kathedrale
+        # D. Kathedrale (Predigt & Prestige)
         box_cath = QGroupBox(t("config_tab.group_cathedral"))
         g_cath = self._setup_grid(box_cath)
 
@@ -603,12 +841,22 @@ class ConfigTab(QWidget):
             self.status_message.emit(t("config_tab.msg_preset_load_err").format(err=e), "error")
 
     def _apply_data_to_widgets(self, data: Dict[str, Any]):
-        # Settler limits
+        # Settler limits & Cathedral Upgrades
         s_limits = data.get("settler_limits", [50, 50, 100, 150, 200, 200])
         self.spin_settler_1.setValue(s_limits[0] if len(s_limits) > 0 else 50)
         self.spin_settler_2.setValue(s_limits[2] if len(s_limits) > 2 else 100)
         self.spin_settler_3.setValue(s_limits[3] if len(s_limits) > 3 else 150)
         self.spin_settler_4.setValue(s_limits[4] if len(s_limits) > 4 else 200)
+
+        c_gold = data.get("cathedral_upgrade_gold", [150, 250, 500])
+        self.spin_cath_gold_2.setValue(c_gold[0] if len(c_gold) > 0 else 150)
+        self.spin_cath_gold_3.setValue(c_gold[1] if len(c_gold) > 1 else 250)
+        self.spin_cath_gold_4.setValue(c_gold[2] if len(c_gold) > 2 else 500)
+
+        c_stone = data.get("cathedral_upgrade_stone", [20, 40, 60])
+        self.spin_cath_stone_2.setValue(c_stone[0] if len(c_stone) > 0 else 20)
+        self.spin_cath_stone_3.setValue(c_stone[1] if len(c_stone) > 1 else 40)
+        self.spin_cath_stone_4.setValue(c_stone[2] if len(c_stone) > 2 else 60)
 
         # Storehouse
         s_caps = data.get("storehouse_capacities", [250, 500, 1000, 2000])
@@ -618,9 +866,16 @@ class ConfigTab(QWidget):
         self.spin_store_4.setValue(s_caps[3] if len(s_caps) > 3 else 2000)
         self.spin_store_max.setValue(data.get("storehouse_max_amount_on_stock", 100))
 
-        # Storehouse Upgrade Gold (letzter Wert wird im UI exponiert)
+        # Storehouse Upgrade Costs
         s_gold = data.get("storehouse_upgrade_gold", [150, 250, 500])
-        self.spin_store_gold.setValue(s_gold[-1] if s_gold else 500)
+        self.spin_store_gold_2.setValue(s_gold[0] if len(s_gold) > 0 else 150)
+        self.spin_store_gold_3.setValue(s_gold[1] if len(s_gold) > 1 else 250)
+        self.spin_store_gold_4.setValue(s_gold[2] if len(s_gold) > 2 else 500)
+
+        s_stone = data.get("storehouse_upgrade_stone", [20, 40, 60])
+        self.spin_store_stone_2.setValue(s_stone[0] if len(s_stone) > 0 else 20)
+        self.spin_store_stone_3.setValue(s_stone[1] if len(s_stone) > 1 else 40)
+        self.spin_store_stone_4.setValue(s_stone[2] if len(s_stone) > 2 else 60)
 
         # Castle
         c_soldiers = data.get("castle_soldier_limits", [25, 43, 61, 91])
@@ -628,6 +883,16 @@ class ConfigTab(QWidget):
         self.spin_castle_soldier_2.setValue(c_soldiers[1] if len(c_soldiers) > 1 else 43)
         self.spin_castle_soldier_3.setValue(c_soldiers[2] if len(c_soldiers) > 2 else 61)
         self.spin_castle_soldier_4.setValue(c_soldiers[3] if len(c_soldiers) > 3 else 91)
+
+        c_up_gold = data.get("castle_upgrade_gold", [150, 250, 500])
+        self.spin_castle_gold_2.setValue(c_up_gold[0] if len(c_up_gold) > 0 else 150)
+        self.spin_castle_gold_3.setValue(c_up_gold[1] if len(c_up_gold) > 1 else 250)
+        self.spin_castle_gold_4.setValue(c_up_gold[2] if len(c_up_gold) > 2 else 500)
+
+        c_up_stone = data.get("castle_upgrade_stone", [25, 50, 75])
+        self.spin_castle_stone_2.setValue(c_up_stone[0] if len(c_up_stone) > 0 else 25)
+        self.spin_castle_stone_3.setValue(c_up_stone[1] if len(c_up_stone) > 1 else 50)
+        self.spin_castle_stone_4.setValue(c_up_stone[2] if len(c_up_stone) > 2 else 75)
 
         c_treasury = data.get("castle_treasury_capacities", [99000, 99000, 99000, 99000])
         self.spin_castle_treasury.setValue(c_treasury[-1] if c_treasury else 99000)
@@ -679,6 +944,16 @@ class ConfigTab(QWidget):
 
         return {
             "settler_limits": [s1, s1, s2, s3, s4, s4],
+            "cathedral_upgrade_gold": [
+                self.spin_cath_gold_2.value(),
+                self.spin_cath_gold_3.value(),
+                self.spin_cath_gold_4.value(),
+            ],
+            "cathedral_upgrade_stone": [
+                self.spin_cath_stone_2.value(),
+                self.spin_cath_stone_3.value(),
+                self.spin_cath_stone_4.value(),
+            ],
             "road_speed_modifier": self.spin_road_speed.value(),
             "storehouse_capacities": [
                 self.spin_store_1.value(),
@@ -687,8 +962,16 @@ class ConfigTab(QWidget):
                 self.spin_store_4.value()
             ],
             "storehouse_max_amount_on_stock": self.spin_store_max.value(),
-            "storehouse_upgrade_gold": [150, 250, self.spin_store_gold.value()],
-            "storehouse_upgrade_stone": [20, 40, 60],
+            "storehouse_upgrade_gold": [
+                self.spin_store_gold_2.value(),
+                self.spin_store_gold_3.value(),
+                self.spin_store_gold_4.value(),
+            ],
+            "storehouse_upgrade_stone": [
+                self.spin_store_stone_2.value(),
+                self.spin_store_stone_3.value(),
+                self.spin_store_stone_4.value(),
+            ],
             "storehouse_upgrade_seconds": [25, 50, 100],
             "storehouse_upgrade_settlers": [5, 10, 20],
             "castle_soldier_limits": [
@@ -696,6 +979,16 @@ class ConfigTab(QWidget):
                 self.spin_castle_soldier_2.value(),
                 self.spin_castle_soldier_3.value(),
                 self.spin_castle_soldier_4.value()
+            ],
+            "castle_upgrade_gold": [
+                self.spin_castle_gold_2.value(),
+                self.spin_castle_gold_3.value(),
+                self.spin_castle_gold_4.value(),
+            ],
+            "castle_upgrade_stone": [
+                self.spin_castle_stone_2.value(),
+                self.spin_castle_stone_3.value(),
+                self.spin_castle_stone_4.value(),
             ],
             "castle_treasury_capacities": [
                 self.spin_castle_treasury.value() // 2,

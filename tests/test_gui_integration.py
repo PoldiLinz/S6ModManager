@@ -75,6 +75,12 @@ class TestGuiIntegration(unittest.TestCase):
         self.assertEqual(cfg_tab.spin_settler_1.value(), 50)
         self.assertEqual(cfg_tab.spin_settler_4.value(), 200)
         self.assertEqual(cfg_tab.spin_store_1.value(), 250)
+        self.assertEqual(cfg_tab.spin_store_gold_2.value(), 150)
+        self.assertEqual(cfg_tab.spin_store_stone_2.value(), 20)
+        self.assertEqual(cfg_tab.spin_castle_gold_2.value(), 150)
+        self.assertEqual(cfg_tab.spin_castle_stone_2.value(), 25)
+        self.assertEqual(cfg_tab.spin_cath_gold_2.value(), 150)
+        self.assertEqual(cfg_tab.spin_cath_stone_2.value(), 20)
         self.assertEqual(cfg_tab.spin_mine_stone.value(), 250)
         self.assertTrue(cfg_tab.radio_bat_6.isChecked())
 
@@ -92,6 +98,12 @@ class TestGuiIntegration(unittest.TestCase):
         self.assertIn("settler_limits", collected)
         self.assertEqual(collected["settler_limits"][-1], 1500)
         self.assertEqual(collected["battalion_size"], 12)
+        self.assertIn("storehouse_upgrade_gold", collected)
+        self.assertIn("storehouse_upgrade_stone", collected)
+        self.assertIn("castle_upgrade_gold", collected)
+        self.assertIn("castle_upgrade_stone", collected)
+        self.assertIn("cathedral_upgrade_gold", collected)
+        self.assertIn("cathedral_upgrade_stone", collected)
 
     def test_scenario_tab_widgets_and_selection(self):
         """Prüft die Funktionsfähigkeit von Tab 2 (Karten & Szenarien)."""
