@@ -155,7 +155,14 @@ class TestGuiIntegration(unittest.TestCase):
         self.assertEqual(dlg.windowTitle(), t("settings.dialog_title"))
         dlg.close()
 
+    def test_tab_switching_loads_all_tabs(self):
+        """Prüft, ob das Durchschalten aller Tabs ohne Exception abläuft."""
+        for i in range(self.window.tab_widget.count()):
+            self.window.tab_widget.setCurrentIndex(i)
+            self.assertEqual(self.window.tab_widget.currentIndex(), i)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

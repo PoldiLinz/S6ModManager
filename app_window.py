@@ -194,7 +194,7 @@ class MainWindow(QMainWindow):
             self.tab_scenarios.refresh_maps()
             self._tab_loaded[1] = True
         elif index == 2 and not self._tab_loaded.get(2):
-            self.tab_sandbox.refresh_ui()
+            self.tab_sandbox.refresh_maps()
             self._tab_loaded[2] = True
         elif index == 3 and not self._tab_loaded.get(3):
             self.tab_system.refresh_all()

@@ -517,6 +517,9 @@ class SandboxTab(QWidget):
         
         self._update_lua_preview()
 
+    def refresh_ui(self):
+        self.refresh_maps()
+
     def refresh_maps(self):
         self.list_maps.clear()
         maps = self.sandbox_engine.list_testable_maps()
@@ -528,7 +531,7 @@ class SandboxTab(QWidget):
             self.list_maps.addItem(item)
         if self.list_maps.count() > 0:
             self.list_maps.setCurrentRow(0)
-        self.status_message.emit("info", t("sandbox_tab.log_maps_refreshed"))
+        self.status_message.emit(t("sandbox_tab.log_maps_refreshed"), "info")
 
     def _on_map_selection_changed(self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]):
         if not current:
@@ -580,10 +583,10 @@ class SandboxTab(QWidget):
         script_path = self.current_map_data["script_path"]
         try:
             self.sandbox_engine.inject_sandbox_into_script(script_path, self._build_options_dict())
-            self.status_message.emit("success", t("sandbox_tab.log_inject_success").format(name=os.path.basename(script_path)))
+            self.status_message.emit(t("sandbox_tab.log_inject_success").format(name=os.path.basename(script_path)), "success")
             self._update_map_item_status(True)
         except Exception as e:
-            self.status_message.emit("error", t("sandbox_tab.log_inject_error").format(err=str(e)))
+            self.status_message.emit(t("sandbox_tab.log_inject_error").format(err=str(e)), "error")
 
     def _on_remove(self):
         if not self.current_map_data:
@@ -592,12 +595,12 @@ class SandboxTab(QWidget):
         try:
             removed = self.sandbox_engine.remove_sandbox_from_script(script_path)
             if removed:
-                self.status_message.emit("success", t("sandbox_tab.log_remove_success").format(name=os.path.basename(script_path)))
+                self.status_message.emit(t("sandbox_tab.log_remove_success").format(name=os.path.basename(script_path)), "success")
             else:
-                self.status_message.emit("info", t("sandbox_tab.log_no_sandbox_found"))
+                self.status_message.emit(t("sandbox_tab.log_no_sandbox_found"), "info")
             self._update_map_item_status(False)
         except Exception as e:
-            self.status_message.emit("error", t("sandbox_tab.log_remove_error").format(err=str(e)))
+            self.status_message.emit(t("sandbox_tab.log_remove_error").format(err=str(e)), "error")
 
     def _update_map_item_status(self, is_injected: bool):
         self.current_map_data["is_injected"] = is_injected

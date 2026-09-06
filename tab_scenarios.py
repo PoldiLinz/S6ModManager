@@ -116,10 +116,11 @@ class ScenarioTab(QWidget):
 
         # Mittlerer Bereich (Vorschau + Varianten)
         mid_layout = QHBoxLayout()
+        mid_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Vorschau-Bild
         self.lbl_preview = QLabel()
-        self.lbl_preview.setFixedSize(200, 150)
+        self.lbl_preview.setFixedSize(180, 160)
         self.lbl_preview.setStyleSheet("border: 1px solid #3c4354; border-radius: 6px; background-color: #121418;")
         self.lbl_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_preview.setText(t("scenarios_tab.lbl_no_preview"))
@@ -128,8 +129,21 @@ class ScenarioTab(QWidget):
         # Varianten-Auswahl
         var_box = QFrame()
         var_box.setObjectName("SubCardFrame")
-        self.var_layout = QVBoxLayout(var_box)
-        self.var_layout.addWidget(QLabel(t("scenarios_tab.lbl_variations")))
+        var_box_layout = QVBoxLayout(var_box)
+        var_box_layout.addWidget(QLabel(t("scenarios_tab.lbl_variations")))
+        
+        var_scroll = QScrollArea()
+        var_scroll.setWidgetResizable(True)
+        var_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        var_scroll.setStyleSheet("QScrollArea { background-color: transparent; border: none; }")
+        
+        var_content = QWidget()
+        self.var_layout = QVBoxLayout(var_content)
+        self.var_layout.setContentsMargins(0, 0, 0, 0)
+        var_scroll.setWidget(var_content)
+        
+        var_box_layout.addWidget(var_scroll)
+
         self.btn_group_vars = QButtonGroup(self)
         self.btn_group_vars.idClicked.connect(self._on_variant_radio_clicked)
         mid_layout.addWidget(var_box, 1)
@@ -163,7 +177,13 @@ class ScenarioTab(QWidget):
 
 
 
-        splitter.addWidget(right_card)
+        scroll_right = QScrollArea()
+        scroll_right.setWidgetResizable(True)
+        scroll_right.setFrameShape(QFrame.Shape.NoFrame)
+        scroll_right.setStyleSheet("QScrollArea { background-color: transparent; border: none; }")
+        scroll_right.setWidget(right_card)
+
+        splitter.addWidget(scroll_right)
         splitter.setSizes([260, 600])
 
         layout.addWidget(splitter)
@@ -261,7 +281,7 @@ class ScenarioTab(QWidget):
         # Bildvorschau
         preview_img = variant.get("preview_image")
         if preview_img and os.path.exists(preview_img):
-            pix = QPixmap(preview_img).scaled(200, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            pix = QPixmap(preview_img).scaled(172, 152, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.lbl_preview.setPixmap(pix)
         else:
             self.lbl_preview.setText(t("scenarios_tab.lbl_no_preview"))
