@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QListWidget, QListWidgetItem, QFrame, QSplitter,
     QCheckBox, QComboBox, QPlainTextEdit, QScrollArea,
     QSizePolicy, QTableWidget, QTableWidgetItem, QHeaderView,
-    QSpinBox, QGridLayout, QGroupBox, QTabWidget
+    QSpinBox, QGridLayout, QGroupBox, QTabWidget, QSpacerItem
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor
@@ -54,6 +54,38 @@ class SandboxTab(QWidget):
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(12, 12, 12, 12)
         main_layout.setSpacing(12)
+
+        # ---------------------------------------------------------------------
+        # Top Action Bar
+        # ---------------------------------------------------------------------
+        top_card = QFrame()
+        top_card.setObjectName("CardFrame")
+        top_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        top_layout = QHBoxLayout(top_card)
+        top_layout.setContentsMargins(12, 10, 12, 10)
+        top_layout.setSpacing(10)
+
+        lbl_sandbox_mode = QLabel(t("sandbox_tab.title_supported_maps"))
+        lbl_sandbox_mode.setStyleSheet("font-weight: bold; color: #94a3b8;")
+        lbl_sandbox_mode.setMinimumHeight(32)
+        lbl_sandbox_mode.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        top_layout.addWidget(lbl_sandbox_mode)
+
+        top_layout.addStretch()
+
+        self.btn_inject = QPushButton("⚡ " + t("sandbox_tab.btn_inject"))
+        self.btn_inject.setObjectName("PrimaryButton")
+        self.btn_inject.clicked.connect(self._on_inject)
+        top_layout.addWidget(self.btn_inject)
+
+        self.btn_remove = QPushButton("↺")
+        self.btn_remove.setObjectName("HeaderRevertBtn")
+        self.btn_remove.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_remove.setToolTip(t("sandbox_tab.btn_remove"))
+        self.btn_remove.clicked.connect(self._on_remove)
+        top_layout.addWidget(self.btn_remove)
+
+        main_layout.addWidget(top_card)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.setHandleWidth(2)
@@ -137,12 +169,41 @@ class SandboxTab(QWidget):
         grid_build = QGridLayout(grp_build)
         grid_build.setHorizontalSpacing(10)
         grid_build.setVerticalSpacing(8)
-        for col in range(6):
-            grid_build.setColumnStretch(col, 0)
-        grid_build.setColumnStretch(6, 1)
+        grid_build.setColumnStretch(0, 0)
+        grid_build.setColumnStretch(1, 0)
+        grid_build.setColumnStretch(2, 0)
+        grid_build.setColumnStretch(3, 0)
+        grid_build.setColumnStretch(4, 1)
+
+        # Header Row
+        lbl_start = QLabel(t("sandbox_tab.col_res_start"))
+        lbl_start.setObjectName("DimLabel")
+        lbl_start.setStyleSheet("font-weight: bold; color: #aaaaaa; font-size: 11px;")
+        lbl_start.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        grid_build.addWidget(lbl_start, 0, 1)
+
+        lbl_van = QLabel(t("sandbox_tab.col_res_vanilla"))
+        lbl_van.setObjectName("DimLabel")
+        lbl_van.setStyleSheet("font-weight: bold; color: #aaaaaa; font-size: 11px;")
+        lbl_van.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        grid_build.addWidget(lbl_van, 0, 2)
+
+        lbl_rev = QLabel(t("config_tab.lbl_reset"))
+        lbl_rev.setObjectName("DimLabel")
+        lbl_rev.setStyleSheet("font-weight: bold; color: #aaaaaa; font-size: 11px;")
+        lbl_rev.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        grid_build.addWidget(lbl_rev, 0, 3)
+
+        def make_vanilla_badge(text: str) -> QLabel:
+            b = QLabel(text)
+            b.setObjectName("VanillaBadge")
+            b.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            b.setFixedWidth(175)
+            b.setToolTip(t("config_tab.tt_vanilla_badge").format(val_str=text))
+            return b
         
         self.combo_player = QComboBox()
-        self.combo_player.setFixedWidth(190)
+        self.combo_player.setFixedWidth(250)
         self.combo_player.addItem(t("sandbox_tab.player_default"), None)
         self.combo_player.addItem("Marcus", "Marcus")
         self.combo_player.addItem("Alandra", "Alandra")
@@ -152,7 +213,7 @@ class SandboxTab(QWidget):
         self.combo_player.addItem("Elias", "Elias")
 
         self.combo_title = QComboBox()
-        self.combo_title.setFixedWidth(190)
+        self.combo_title.setFixedWidth(250)
         for i, text in enumerate([t("sandbox_tab.title_knight"), t("sandbox_tab.title_sheriff"), 
                                   t("sandbox_tab.title_baron"), t("sandbox_tab.title_earl"), 
                                   t("sandbox_tab.title_marquis"), t("sandbox_tab.title_duke")], 1):
@@ -162,32 +223,39 @@ class SandboxTab(QWidget):
         self.combo_storehouse = QComboBox()
         self.combo_castle = QComboBox()
         for cb in [self.combo_church, self.combo_storehouse, self.combo_castle]:
-            cb.setFixedWidth(115)
+            cb.setFixedWidth(250)
             for i, text in enumerate([t("sandbox_tab.level_1"), t("sandbox_tab.level_2"), 
                                       t("sandbox_tab.level_3"), t("sandbox_tab.level_4")], 1):
                 cb.addItem(text, i)
         
         # Col 1: Player & Title
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_overwrite_knight")), 0, 0)
-        grid_build.addWidget(self.combo_player, 0, 1)
-        grid_build.addWidget(self._create_combo_revert_btn(self.combo_player, 0), 0, 2)
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_overwrite_knight")), 1, 0)
+        grid_build.addWidget(self.combo_player, 1, 1)
+        grid_build.addWidget(make_vanilla_badge(self.combo_player.itemText(0)), 1, 2)
+        grid_build.addWidget(self._create_combo_revert_btn(self.combo_player, 0), 1, 3)
 
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_title")), 1, 0)
-        grid_build.addWidget(self.combo_title, 1, 1)
-        grid_build.addWidget(self._create_combo_revert_btn(self.combo_title, 0), 1, 2)
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_title")), 2, 0)
+        grid_build.addWidget(self.combo_title, 2, 1)
+        grid_build.addWidget(make_vanilla_badge(self.combo_title.itemText(0)), 2, 2)
+        grid_build.addWidget(self._create_combo_revert_btn(self.combo_title, 0), 2, 3)
+
+        grid_build.addItem(QSpacerItem(20, 12, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed), 3, 0, 1, 4)
 
         # Col 2: Church, Storehouse, Castle (matching tab_config order)
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_church")), 0, 3)
-        grid_build.addWidget(self.combo_church, 0, 4)
-        grid_build.addWidget(self._create_combo_revert_btn(self.combo_church, 0), 0, 5)
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_church")), 4, 0)
+        grid_build.addWidget(self.combo_church, 4, 1)
+        grid_build.addWidget(make_vanilla_badge(self.combo_church.itemText(0)), 4, 2)
+        grid_build.addWidget(self._create_combo_revert_btn(self.combo_church, 0), 4, 3)
 
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_storehouse")), 1, 3)
-        grid_build.addWidget(self.combo_storehouse, 1, 4)
-        grid_build.addWidget(self._create_combo_revert_btn(self.combo_storehouse, 0), 1, 5)
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_storehouse")), 5, 0)
+        grid_build.addWidget(self.combo_storehouse, 5, 1)
+        grid_build.addWidget(make_vanilla_badge(self.combo_storehouse.itemText(0)), 5, 2)
+        grid_build.addWidget(self._create_combo_revert_btn(self.combo_storehouse, 0), 5, 3)
 
-        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_castle")), 2, 3)
-        grid_build.addWidget(self.combo_castle, 2, 4)
-        grid_build.addWidget(self._create_combo_revert_btn(self.combo_castle, 0), 2, 5)
+        grid_build.addWidget(QLabel(t("sandbox_tab.lbl_castle")), 6, 0)
+        grid_build.addWidget(self.combo_castle, 6, 1)
+        grid_build.addWidget(make_vanilla_badge(self.combo_castle.itemText(0)), 6, 2)
+        grid_build.addWidget(self._create_combo_revert_btn(self.combo_castle, 0), 6, 3)
         
         for cb in [self.combo_player, self.combo_title, self.combo_church, self.combo_storehouse, self.combo_castle]:
             cb.currentIndexChanged.connect(self._update_lua_preview)
@@ -272,20 +340,7 @@ class SandboxTab(QWidget):
         self.txt_preview.setMinimumHeight(120)
         l_prev.addWidget(self.txt_preview)
 
-        # Buttons
-        h_actions = QHBoxLayout()
-        h_actions.addStretch()
-        self.btn_inject = QPushButton("💉 " + t("sandbox_tab.btn_inject"))
-        self.btn_inject.setObjectName("PrimaryButton")
-        self.btn_inject.setMinimumWidth(180)
-        self.btn_inject.clicked.connect(self._on_inject)
-        h_actions.addWidget(self.btn_inject)
 
-        self.btn_remove = QPushButton("🗑 " + t("sandbox_tab.btn_remove"))
-        self.btn_remove.setObjectName("DangerButton")
-        self.btn_remove.clicked.connect(self._on_remove)
-        h_actions.addWidget(self.btn_remove)
-        l_prev.addLayout(h_actions)
 
         self.right_layout.addWidget(card_preview)
         self.right_layout.addStretch()

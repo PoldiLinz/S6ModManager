@@ -302,12 +302,13 @@ QPushButton#RevertBtn {
     border: 1px solid #272c38;
     border-radius: 4px;
     padding: 2px;
-    font-size: 14px;
+    padding-bottom: 4px;
+    font-size: 16px;
     font-weight: bold;
     min-width: 28px;
     max-width: 28px;
-    min-height: 24px;
-    max-height: 24px;
+    min-height: 28px;
+    max-height: 28px;
 }
 
 QPushButton#RevertBtn:hover {
@@ -323,20 +324,49 @@ QPushButton#RevertBtn[modified="true"] {
     border: 1px solid #dfb23b;
 }
 
+/* Header Revert Button (größer für Top Action Bar) */
+QPushButton#HeaderRevertBtn {
+    background-color: #1a1d26;
+    color: #dfb23b;
+    border: 1px solid #272c38;
+    border-radius: 6px;
+    padding: 4px;
+    padding-bottom: 6px;
+    font-size: 20px;
+    font-weight: bold;
+    min-width: 36px;
+    max-width: 36px;
+    min-height: 34px;
+    max-height: 34px;
+}
+
+QPushButton#HeaderRevertBtn:hover {
+    background-color: #2a2517;
+    color: #ffd700;
+    border-color: #c59b27;
+}
+
+QPushButton#HeaderRevertBtn[modified="true"] {
+    background-color: #342a15;
+    color: #ffd700;
+    border: 1px solid #dfb23b;
+}
+
 QPushButton#RevertBtn[modified="true"]:hover {
     background-color: #42361b;
     color: #ffffff;
     border-color: #f5ca4e;
 }
 
-/* Eingabefelder (Spinbox, LineEdit, ComboBox) */
-QSpinBox, QDoubleSpinBox, QLineEdit {
-    background-color: #161820;
-    color: #ffffff;
-    border: 1px solid #333a4a;
+/* Forms */
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+    background-color: #1a1d26;
+    color: #e4e8ee;
+    border: 1px solid #2d3342;
     border-radius: 4px;
-    padding: 5px 8px;
+    padding: 6px 10px;
     font-size: 13px;
+    min-height: 32px;
     qproperty-alignment: 'AlignCenter';
 }
 

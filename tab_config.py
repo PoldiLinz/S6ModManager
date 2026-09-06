@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel,
     QPushButton, QComboBox, QSpinBox, QDoubleSpinBox,
     QTabWidget, QScrollArea, QFrame, QGroupBox, QMessageBox,
-    QInputDialog, QRadioButton, QButtonGroup
+    QInputDialog, QRadioButton, QButtonGroup, QSizePolicy
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 from typing import Dict, Any, Optional
@@ -92,12 +92,15 @@ class ConfigTab(QWidget):
         # 1. Top Action & Preset Bar
         top_card = QFrame()
         top_card.setObjectName("CardFrame")
+        top_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         top_layout = QHBoxLayout(top_card)
         top_layout.setContentsMargins(12, 10, 12, 10)
         top_layout.setSpacing(10)
 
         lbl_preset = QLabel(t("config_tab.lbl_preset"))
         lbl_preset.setStyleSheet("font-weight: bold;")
+        lbl_preset.setMinimumHeight(32)
+        lbl_preset.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         top_layout.addWidget(lbl_preset)
 
         self.preset_combo = QComboBox()
@@ -112,15 +115,17 @@ class ConfigTab(QWidget):
 
         top_layout.addStretch()
 
-        btn_restore_vanilla = QPushButton(t("config_tab.btn_restore_vanilla"))
-        btn_restore_vanilla.setObjectName("DangerButton")
-        btn_restore_vanilla.clicked.connect(self._on_restore_vanilla)
-        top_layout.addWidget(btn_restore_vanilla)
-
         btn_apply = QPushButton(t("config_tab.btn_apply"))
         btn_apply.setObjectName("PrimaryButton")
         btn_apply.clicked.connect(self._on_apply_config)
         top_layout.addWidget(btn_apply)
+
+        btn_restore_vanilla = QPushButton("↺")
+        btn_restore_vanilla.setObjectName("HeaderRevertBtn")
+        btn_restore_vanilla.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_restore_vanilla.setToolTip(t("config_tab.btn_restore_vanilla"))
+        btn_restore_vanilla.clicked.connect(self._on_restore_vanilla)
+        top_layout.addWidget(btn_restore_vanilla)
 
         main_layout.addWidget(top_card)
 

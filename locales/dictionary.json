@@ -38,7 +38,7 @@
       "restart_required_title": "Restart Required",
       "restart_required_prompt": "Language changed to {lang}.\n\nA restart of the application is required to apply the changes.\nDo you want to restart now?",
       "about_title": "About Settlers 6 Mod & Map Manager",
-      "about_text": "<h3>👑 THE SETTLERS 6 • MOD & MAP MANAGER</h3><p><b>Version:</b> 1.1 (S6Patcher Edition)</p><p>Modern tool for managing configurations, game limits, scenario variants and test maps for <i>The Settlers: Rise of an Empire</i>.</p><hr><p><b>Features:</b></p><ul><li>Live XML Editor with Vanilla reference values & Lightroom Revert</li><li>Scenario Map Switcher with backup security</li><li>Sandbox Test Map Lua Injector</li><li>S6Patcher integrity control</li></ul><p style='color:#9aa5b8;'>Developed for the Settlers 6 Modding Community.</p>"
+      "about_text": "<h3>👑 THE SETTLERS 6 • MOD & MAP MANAGER</h3><p><b>Version:</b> 1.1 (S6Patcher Edition)</p><p>Modern tool for managing configurations, game limits, scenario variants and test maps for <i>The Settlers: Rise of an Empire</i>.</p><hr><p><b>Features:</b></p><ul><li>Live XML Editor with Vanilla reference values & Lightroom Revert</li><li>Scenario Map Switcher with backup security</li><li>Sandbox Test Map Lua Injector</li><li>S6Patcher integrity control</li></ul><hr><p style='color:#9aa5b8; font-size: 12px;'><b>Developed by:</b> LeopoldWalli AI Software Productions<br>Created for the Settlers 6 Modding Community.<br>© 2026 LeopoldWalli AI Software Productions</p>"
     },
     "settings": {
       "dialog_title": "⚙️ General Settings & Paths",
@@ -188,7 +188,7 @@
       "lbl_title": "Starting Title:",
       "lbl_castle": "Castle:",
       "lbl_storehouse": "Storehouse:",
-      "lbl_church": "Church:",
+      "lbl_church": "Cathedral:",
       "title_knight": "Knight",
       "title_sheriff": "Sheriff",
       "title_baron": "Baron",
@@ -363,7 +363,7 @@
       "restart_required_title": "Neustart erforderlich",
       "restart_required_prompt": "Sprache wurde auf {lang} geändert.\n\nEin Neustart der Anwendung ist erforderlich, um die Änderungen zu übernehmen.\nMöchtest du jetzt neu starten?",
       "about_title": "Über Siedler 6 Mod & Map Manager",
-      "about_text": "<h3>👑 DIE SIEDLER 6 • MOD & MAP MANAGER</h3><p><b>Version:</b> 1.1 (S6Patcher Edition)</p><p>Modernes Werkzeug zur Verwaltung von Konfigurationen, Spiel-Limits, Szenario-Varianten und Test-Maps für <i>Die Siedler: Aufstieg eines Königreichs</i>.</p><hr><p><b>Features:</b></p><ul><li>Live XML-Editor mit Vanilla-Referenzwerten & Lightroom-Revert</li><li>Szenario-Karten-Switcher mit Backup-Sicherheit</li><li>Sandbox-Testmap Lua-Injektor</li><li>S6Patcher Integritätskontrolle</li></ul><p style='color:#9aa5b8;'>Entwickelt für die Siedler 6 Modding Community.</p>"
+      "about_text": "<h3>👑 DIE SIEDLER 6 • MOD & MAP MANAGER</h3><p><b>Version:</b> 1.1 (S6Patcher Edition)</p><p>Modernes Werkzeug zur Verwaltung von Konfigurationen, Spiel-Limits, Szenario-Varianten und Test-Maps für <i>Die Siedler: Aufstieg eines Königreichs</i>.</p><hr><p><b>Features:</b></p><ul><li>Live XML-Editor mit Vanilla-Referenzwerten & Lightroom-Revert</li><li>Szenario-Karten-Switcher mit Backup-Sicherheit</li><li>Sandbox-Testmap Lua-Injektor</li><li>S6Patcher Integritätskontrolle</li></ul><hr><p style='color:#9aa5b8; font-size: 12px;'><b>Entwickelt von:</b> LeopoldWalli AI Software Productions<br>Erstellt für die Siedler 6 Modding Community.<br>© 2026 LeopoldWalli AI Software Productions</p>"
     },
     "settings": {
       "dialog_title": "⚙️ Allgemeine Einstellungen & Pfade",
@@ -507,13 +507,13 @@
       "msg_remove_error": "Fehler bei Bereinigung: {err}",
       "lbl_preset": "🧪 Testumgebung / Preset:",
       "preset_vanilla": "Vanilla (Keine Cheats)",
-      "preset_mid": "Mid-Tier Testing",
-      "preset_high": "High-Tier Testing",
+      "preset_mid": "Mid-Tier Test (Fortgeschritten)",
+      "preset_high": "High-Tier Test (Endgame)",
       "grp_buildings": "Titel && Gebäude-Stufen",
       "lbl_title": "Start-Titel:",
       "lbl_castle": "Burg:",
       "lbl_storehouse": "Lagerhaus:",
-      "lbl_church": "Kirche:",
+      "lbl_church": "Kathedrale:",
       "title_knight": "Ritter",
       "title_sheriff": "Sheriff",
       "title_baron": "Baron",

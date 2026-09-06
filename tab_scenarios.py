@@ -8,7 +8,8 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QLabel,
     QPushButton, QListWidget, QListWidgetItem, QFrame,
     QRadioButton, QButtonGroup, QScrollArea, QMessageBox,
-    QDialog, QLineEdit, QTextEdit, QComboBox, QFileDialog
+    QDialog, QLineEdit, QTextEdit, QComboBox, QFileDialog,
+    QSizePolicy
 )
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, pyqtSignal
@@ -37,6 +38,37 @@ class ScenarioTab(QWidget):
     def _init_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(10)
+
+        # ---------------------------------------------------------------------
+        # Top Action Bar
+        # ---------------------------------------------------------------------
+        top_card = QFrame()
+        top_card.setObjectName("CardFrame")
+        top_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        top_layout = QHBoxLayout(top_card)
+        top_layout.setContentsMargins(12, 10, 12, 10)
+        top_layout.setSpacing(10)
+
+        self.btn_open_folder = QPushButton(t("scenarios_tab.btn_open_folder"))
+        self.btn_open_folder.clicked.connect(self._on_open_folder)
+        top_layout.addWidget(self.btn_open_folder)
+
+        top_layout.addStretch()
+
+        self.btn_activate = QPushButton(t("scenarios_tab.btn_activate"))
+        self.btn_activate.setObjectName("PrimaryButton")
+        self.btn_activate.clicked.connect(self._on_activate_variant)
+        top_layout.addWidget(self.btn_activate)
+
+        self.btn_revert = QPushButton("↺")
+        self.btn_revert.setObjectName("HeaderRevertBtn")
+        self.btn_revert.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_revert.setToolTip(t("scenarios_tab.btn_revert"))
+        self.btn_revert.clicked.connect(self._on_revert_map)
+        top_layout.addWidget(self.btn_revert)
+
+        layout.addWidget(top_card)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
 
@@ -129,26 +161,7 @@ class ScenarioTab(QWidget):
         self.right_layout.addWidget(self.details_box)
         self.right_layout.addStretch()
 
-        # Action Buttons
-        btn_layout = QHBoxLayout()
 
-        self.btn_open_folder = QPushButton(t("scenarios_tab.btn_open_folder"))
-        self.btn_open_folder.clicked.connect(self._on_open_folder)
-        btn_layout.addWidget(self.btn_open_folder)
-
-        btn_layout.addStretch()
-
-        self.btn_revert = QPushButton(t("scenarios_tab.btn_revert"))
-        self.btn_revert.setObjectName("DangerButton")
-        self.btn_revert.clicked.connect(self._on_revert_map)
-        btn_layout.addWidget(self.btn_revert)
-
-        self.btn_activate = QPushButton(t("scenarios_tab.btn_activate"))
-        self.btn_activate.setObjectName("PrimaryButton")
-        self.btn_activate.clicked.connect(self._on_activate_variant)
-        btn_layout.addWidget(self.btn_activate)
-
-        self.right_layout.addLayout(btn_layout)
 
         splitter.addWidget(right_card)
         splitter.setSizes([260, 600])

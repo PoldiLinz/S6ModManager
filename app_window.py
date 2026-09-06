@@ -201,15 +201,13 @@ class MainWindow(QMainWindow):
         act_exit = menu_start.addAction(t("menu.exit"))
         act_exit.triggered.connect(self.close)
 
-        # 2. Einstellungen-Menü
-        menu_settings = menubar.addMenu(t("menu.settings"))
-        act_general_settings = menu_settings.addAction(t("menu.general_settings"))
-        act_general_settings.triggered.connect(self._on_menu_general_settings)
+        # 2. Einstellungen-Aktion
+        act_settings = menubar.addAction(t("menu.settings"))
+        act_settings.triggered.connect(self._on_menu_general_settings)
 
-        # 3. Hilfe-Menü
-        menu_help = menubar.addMenu(t("menu.help"))
-        act_about = menu_help.addAction(t("menu.about"))
-        act_about.triggered.connect(self._on_menu_about)
+        # 3. Hilfe-Aktion
+        act_help = menubar.addAction(t("menu.help"))
+        act_help.triggered.connect(self._on_menu_about)
 
     def _on_menu_load_preset(self):
         self.tab_widget.setCurrentIndex(0)

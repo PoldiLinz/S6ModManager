@@ -55,6 +55,16 @@ sys.excepthook = handle_exception
 def main():
     logging.info("Starte Siedler 6 Mod & Map Manager...")
     try:
+        # Windows-spezifischer Fix, damit das Icon in der Taskleiste korrekt angezeigt wird
+        # (verhindert das Standard-Python-Icon durch Setzen einer eigenen AppUserModelID)
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                myappid = 'siedler6.modmanager.1_1' 
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            except Exception as e:
+                logging.warning(f"Konnte AppUserModelID nicht setzen: {e}")
+
         # Windows High DPI Policy
         if hasattr(Qt.HighDpiScaleFactorRoundingPolicy, 'PassThrough'):
             QApplication.setHighDpiScaleFactorRoundingPolicy(
