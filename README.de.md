@@ -104,6 +104,61 @@ python src/ModManager/main.py
 
 ---
 
+## 🧠 Eigene Szenario-Varianten mit KI erstellen (KI-gestützter Modding-Workflow)
+
+Du brauchst keine komplizierten 3D-Karten-Editoren, um neue Spielmodi für *Die Siedler 6* zu erschaffen. Der gesamte Ablauf einer Mission, die Diplomatie, Händlerangebote, Start-Rohstoffe und Angriffswellen werden rein über **Lua-Skripte** (`mapscript.lua`) gesteuert.
+
+Mit modernen KI-Assistenten (wie Antigravity, Gemini, ChatGPT oder Claude) kannst du im Handumdrehen eigene Szenario-Varianten erstellen und iterieren.
+
+### Der 4-Schritte-Workflow für Szenarien:
+
+#### 1. Basiskarte wählen & Varianten-Ordner anlegen
+Navigiere in deiner ModManager-Installation zu `src/ModManager/Scenarios/` (oder in deinen Workspace) und wähle eine Karten-ID (z. B. `me_fairtrade` für *Fairer Handel*):
+```text
+Scenarios/me_fairtrade/
+├── vanilla/
+│   └── scenario.json
+└── meine_ki_survival_mod/
+    ├── scenario.json
+    ├── map/
+    │   ├── mapscript.lua      # Deine KI-generierte Spiellogik
+    │   └── info.xml           # Karten-Infos & Anzeigename
+    └── text/de/maps/          # Optional: Eigene deutsche Missionsbeschreibung
+        └── map_me_fairtrade.xml
+```
+
+#### 2. Metadaten in `scenario.json` anlegen
+Erstelle eine kleine JSON-Datei, damit der ModManager deine Variante erkennt und im Menü anzeigt:
+```json
+{
+  "id": "meine_ki_survival_mod",
+  "title": "Banditen-Belagerung: 20 Angriffswellen",
+  "author": "DeinName & KI",
+  "description": "Verteidige deine Stadt gegen koordinierte Angriffe alle 5 Minuten und erfülle die Kloster-Lieferkette.",
+  "is_vanilla": false
+}
+```
+
+#### 3. Prompting für deinen KI-Assistenten (Prompt-Vorlagen)
+Kopiere Funktionen aus einer bestehenden `mapscript.lua` (z. B. `Mission_InitPlayers` oder `Mission_FirstMapAction`) in deinen KI-Prompt:
+
+* **Prompt-Beispiel 1 (Angriffswellen & Raids):**  
+  > *"Hier ist die Basis-`mapscript.lua` von Die Siedler 6. Ich möchte ein wiederkehrendes Angriffs-Event hinzufügen: Spawne alle 6 Minuten 2 Schwertkämpfer- und 1 Bogenschützen-Bataillon am Banditenlager, die mit `Logic.CreateBattalionOnUnblockedLand` auf das Lagerhaus von Spieler 1 marschieren."*
+
+* **Prompt-Beispiel 2 (Hardcore-Wirtschaft & Mangel):**  
+  > *"Passe `Mission_InitPlayers` und `Mission_InitMerchants` an: Spieler 1 startet mit 0 Stein und nur 10 Holz. Erstelle eine Lieferquest, bei der das Abliefern von 20 Brot an das Kloster mit 50 Stein belohnt wird."*
+
+* **Prompt-Beispiel 3 (Totaler Krieg / Jeder gegen Jeden):**  
+  > *"Passe `Mission_SetDiplomacy` an, sodass alle NPC-Städte sofort mit `DiplomacyStates.Enemy` starten. Gib jeder Feindstadt in `Mission_FirstMapAction` 3 zusätzliche Verteidigungs-Bataillone."*
+
+#### 4. Sofortiges Testen & Schnelle Iteration (Sandbox-Integration)
+1. Öffne den ModManager &rarr; wechsle zum Reiter **Karten & Szenario-Varianten**.
+2. Klicke auf **Liste aktualisieren** &rarr; deine neue KI-Variante erscheint sofort in der Liste.
+3. Klicke auf **Ausgewählte Variante aktivieren** &rarr; der Manager verpackt sie sekundenschnell in die `mod.bba`.
+4. 💡 **Pro-Tipp für schnelles Testen:** Wechsle kurz in den Reiter **Testmap & Sandbox-Injektor**, schalte den Herzog-Titel und Rohstoff-Boost ein, starte das Spiel und teste deine neue Skript-Logik sofort, ohne vorher 40 Minuten deine Siedlung aufbauen zu müssen!
+
+---
+
 ## 📁 Projekt- & Verzeichnis-Struktur
 
 ```text

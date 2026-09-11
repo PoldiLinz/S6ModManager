@@ -105,6 +105,61 @@ python src/ModManager/main.py
 
 ---
 
+## 🧠 Creating Custom Scenario Variants with AI (AI-Assisted Modding)
+
+You don't need complex 3D map editors to build compelling new game modes for *The Settlers 6*. The entire mission flow, diplomacy, merchants, starting resources, and attack waves are controlled purely through **Lua scripting** (`mapscript.lua`).
+
+Using modern AI coding assistants (such as Antigravity, Gemini, ChatGPT, or Claude), you can easily generate and iterate on custom scenario variants.
+
+### The 4-Step Scenario Workflow:
+
+#### 1. Choose a Base Map & Create Variant Directory
+In your ModManager installation, navigate to `src/ModManager/Scenarios/` (or your local workspace) and choose an existing map ID (e.g. `me_fairtrade`):
+```text
+Scenarios/me_fairtrade/
+├── vanilla/
+│   └── scenario.json
+└── my_ai_survival/
+    ├── scenario.json
+    ├── map/
+    │   ├── mapscript.lua      # Your AI-generated game logic
+    │   └── info.xml           # Map info & display name
+    └── text/de/maps/          # Optional: localized mission briefing
+        └── map_me_fairtrade.xml
+```
+
+#### 2. Define `scenario.json`
+Create a small metadata file so the ModManager recognizes your variant:
+```json
+{
+  "id": "my_ai_survival",
+  "title": "Bandit Survival: 20-Wave Siege",
+  "author": "YourName & AI",
+  "description": "Defend against continuous bandit onslaughts every 5 minutes while maintaining trade relations.",
+  "is_vanilla": false
+}
+```
+
+#### 3. Prompting Your AI Assistant (Prompt Templates)
+Copy functions from an existing `mapscript.lua` (such as `Mission_InitPlayers` or `Mission_FirstMapAction`) into your AI prompt:
+
+* **Example Prompt 1 (Attack Waves & Raids):**  
+  > *"Here is the base `mapscript.lua` of The Settlers 6. I want to add a recurring attack event: Every 6 minutes, spawn 2 sword and 1 bow battalion at the bandit camp heading towards player 1's storehouse using `Logic.CreateBattalionOnUnblockedLand`."*
+
+* **Example Prompt 2 (Hardcore Economy & Shortage):**  
+  > *"Modify `Mission_InitPlayers` and `Mission_InitMerchants` so that player 1 starts with 0 stone and only 10 wood. Add a quest where delivering 20 bread to the monastery rewards 50 stone."*
+
+* **Example Prompt 3 (All-Out War / Total Anarchy):**  
+  > *"Modify `Mission_SetDiplomacy` so all NPC factions start as `DiplomacyStates.Enemy`. Give each rival city 3 initial defense battalions in `Mission_FirstMapAction`."*
+
+#### 4. Instant Test & Rapid Iteration (Sandbox Integration)
+1. Open the ModManager &rarr; go to the **Maps & Scenario Variants** tab.
+2. Click **Refresh List** &rarr; your new AI variant appears instantly.
+3. Click **Activate Selected Variant** &rarr; the ModManager packs it into the game overlay seamlessly.
+4. 💡 **Pro-Tip for Rapid Testing:** Switch to the **Test Map & Sandbox Injector** tab, activate Duke Title / Resource boost, launch the game, and test your new AI script logic without waiting for lengthy economy build-ups!
+
+---
+
 ## 📁 Project & Directory Structure
 
 ```text
