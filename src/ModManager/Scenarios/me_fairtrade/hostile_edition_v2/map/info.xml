@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MapInfo>
+ <Version>2</Version>
+ <NameKey>Map_me_fairtrade/MapName</NameKey>
+ <DescKey>Map_me_fairtrade/MapDescription</DescKey>
+ <ModeKey>UI_Texts/MapType_Scripted</ModeKey>
+ <Name>Feindseliger Freihandel v2.0</Name>
+ <Desc>Die Handelsbarone von Plenham und Windchill bedrohen das Kloster Metaria und blockieren die Region.
+
+Nach einer 45-minütigen Aufbau-Schonfrist beginnen die Feindstädte mit koordinierten Angriffswellen.
+
+Siegbedingungen:
+1. Handelssieg: Erfülle die mehrstufige Lieferkette des Klosters Metaria (Kleidung, Besen, Bier und 5000 Gold).
+2. Militärsieg: Zerstöre die Festungen von Plenham und Windchill.</Desc>
+ <Mode></Mode>
+ <SizeX>769</SizeX>
+ <SizeY>769</SizeY>
+ <MaxPlayers>1</MaxPlayers>
+ <PlayListBackground></PlayListBackground>
+ <PlayListBackgroundWinter></PlayListBackgroundWinter>
+ <PlayListCombatSmall></PlayListCombatSmall>
+ <PlayListCombatLarge></PlayListCombatLarge>
+ <PreloadModels>true</PreloadModels>
+ <ClimateZone>MiddleEurope</ClimateZone>
+ <GUID>
+  <GUID>60404de3-c8f8-4ed5-a519-2c4e3a93af05</GUID>
+ </GUID>
+ <PlayerInfos>
+  <Info>
+   <Name></Name>
+   <Head></Head>
+   <AI>0</AI>
+   <Diplomacy>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+   </Diplomacy>
+  </Info>
+  <Info>
+   <Name></Name>
+   <Head></Head>
+   <AI>0</AI>
+   <Diplomacy>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+   </Diplomacy>
+  </Info>
+  <Info>
+   <Name></Name>
+   <Head></Head>
+   <AI>0</AI>
+   <Diplomacy>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+   </Diplomacy>
+  </Info>
+  <Info>
+   <Name></Name>
+   <Head></Head>
+   <AI>0</AI>
+   <Diplomacy>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+   </Diplomacy>
+  </Info>
+  <Info>
+   <Name></Name>
+   <Head></Head>
+   <AI>0</AI>
+   <Diplomacy>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+   </Diplomacy>
+  </Info>
+  <Info>
+   <Name></Name>
+   <Head></Head>
+   <AI>0</AI>
+   <Diplomacy>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+   </Diplomacy>
+  </Info>
+  <Info>
+   <Name></Name>
+   <Head></Head>
+   <AI>0</AI>
+   <Diplomacy>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+   </Diplomacy>
+  </Info>
+  <Info>
+   <Name></Name>
+   <Head></Head>
+   <AI>0</AI>
+   <Diplomacy>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+   </Diplomacy>
+  </Info>
+  <Info>
+   <Name></Name>
+   <Head></Head>
+   <AI>0</AI>
+   <Diplomacy>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+    <State>-1</State>
+   </Diplomacy>
+  </Info>
+ </PlayerInfos>
+ <StartGoods> </StartGoods>
+ <Keys> </Keys>
+ <StartPositions> </StartPositions>
+ <ValidPlayerColors> </ValidPlayerColors>
+ <ValidKnightNames>
+  <ValidKnightName>U_KnightTrading</ValidKnightName>
+  <ValidKnightName>U_KnightHealing</ValidKnightName>
+  <ValidKnightName>U_KnightChivalry</ValidKnightName>
+  <ValidKnightName>U_KnightWisdom</ValidKnightName>
+  <ValidKnightName>U_KnightPlunder</ValidKnightName>
+  <ValidKnightName>U_KnightSong</ValidKnightName>
+ </ValidKnightNames>
+ <ValidResourceModificators> </ValidResourceModificators>
+ <ValidVictoryConditions> </ValidVictoryConditions>
+ <CombatMusic> </CombatMusic>
+</MapInfo>

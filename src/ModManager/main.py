@@ -1,0 +1,139 @@
+"""
+Siedler 6 Mod & Map Manager - Haupteinstiegspunkt (main.py)
+Initialisiert High-DPI, PyQt6 Application, QSS-Styling und startet die GUI.
+"""
+
+import os
+import sys
+
+# High DPI Awareness für gestochen scharfe Schriften auf Windows
+os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+
+# Pfad zu ModManager sicherstellen
+try:
+    from ModManager.utils import get_base_path
+except ImportError:
+    from utils import get_base_path
+current_dir = get_base_path()
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+import traceback
+import logging
+
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QApplication, QMessageBox
+
+try:
+    from ModManager.app_window import MainWindow
+except ImportError:
+    from app_window import MainWindow
+
+# Logdatei im Root-Verzeichnis
+root_dir = os.path.dirname(parent_dir)
+log_file = os.path.join(root_dir, "mod_manager.log")
+logging.basicConfig(
+    filename=log_file,
+    level=logging.INFO,
+    format="[%(asctime)s] [%(levelname)s] %(message)s",
+    encoding="utf-8"
+)
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    err_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    logging.critical("Unbehandelte Ausnahme:\n" + err_msg)
+    print("\n[KRITISCHER FEHLER]\n" + err_msg, file=sys.stderr)
+    try:
+        QMessageBox.critical(None, "Mod Manager Fehler", f"Ein unerwarteter Fehler ist aufgetreten:\n\n{exc_value}\n\nDetails in mod_manager.log.")
+    except Exception:
+        pass
+
+sys.excepthook = handle_exception
+
+
+def main():
+    logging.info("Starte Siedler 6 Mod & Map Manager...")
+    try:
+        # Windows-spezifischer Fix, damit das Icon in der Taskleiste korrekt angezeigt wird
+        # (verhindert das Standard-Python-Icon durch Setzen einer eigenen AppUserModelID)
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                myappid = 'siedler6.modmanager.1_1' 
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            except Exception as e:
+                logging.warning(f"Konnte AppUserModelID nicht setzen: {e}")
+
+        # Windows High DPI Policy
+        if hasattr(Qt.HighDpiScaleFactorRoundingPolicy, 'PassThrough'):
+            QApplication.setHighDpiScaleFactorRoundingPolicy(
+                Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+            )
+
+        app = QApplication(sys.argv)
+        app.setApplicationName("Siedler 6 Mod & Map Manager")
+        app.setOrganizationName("Siedler 6 Modding Community")
+
+        # QSS Stylesheet laden
+        theme_path = os.path.join(current_dir, "styles", "theme.qss")
+        if os.path.exists(theme_path):
+            with open(theme_path, "r", encoding="utf-8") as f:
+                theme_str = f.read()
+                styles_abs_dir = os.path.join(current_dir, "styles").replace("\\", "/")
+                theme_str = theme_str.replace("ModManager/styles", styles_abs_dir)
+                app.setStyleSheet(theme_str)
+
+        # Icon laden
+        icon_path = os.path.join(current_dir, "assets", "icon.ico")
+        if os.path.exists(icon_path):
+            app.setWindowIcon(QIcon(icon_path))
+
+        from ModManager.engines.system_engine import SystemEngine
+        from ModManager.engines.i18n_engine import t
+        system = SystemEngine()
+        
+        # Prüfung auf ModLoader-Installation
+        if not system.has_modloader():
+            system.ensure_workspace_directories()
+            
+            from PyQt6.QtWidgets import QMessageBox
+            warning_box = QMessageBox()
+            warning_box.setIcon(QMessageBox.Icon.Information)
+            warning_box.setWindowTitle(t("modloader.warning_title"))
+            warning_box.setText(t("modloader.warning_msg"))
+            warning_box.setTextFormat(Qt.TextFormat.RichText)
+            warning_box.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+            warning_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+            warning_box.exec()
+
+        out_mod = os.path.join(system.original_mods_path, "mod")
+        out_base = os.path.join(system.base_game_files_path, "shrgcfg0_Extracted")
+        
+        if not os.path.exists(out_mod) or not os.path.exists(out_base):
+            from PyQt6.QtWidgets import QDialog
+            from ModManager.dialog_startup_setup import StartupSetupDialog
+            setup_dlg = StartupSetupDialog(system)
+            if setup_dlg.exec() != QDialog.DialogCode.Accepted:
+                logging.info("Startup setup cancelled by user. Exiting.")
+                sys.exit(0)
+
+        window = MainWindow()
+        if os.path.exists(icon_path):
+            window.setWindowIcon(QIcon(icon_path))
+        window.show()
+
+        logging.info("Hauptfenster erfolgreich geöffnet. Starte Event-Loop.")
+        sys.exit(app.exec())
+    except Exception as e:
+        logging.exception(f"Fehler in main(): {e}")
+        raise
+
+
+if __name__ == "__main__":
+    main()

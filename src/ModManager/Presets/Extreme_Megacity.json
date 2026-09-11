@@ -1,0 +1,121 @@
+{
+    "name": "Extrem (Megastadt & Sandbox)",
+    "description": "Maximales Spielerlebnis: 1.500 Siedler, gigantische Lager & Schatzkammern, 12er Bataillone und uneinnehmbare Festungsmauern.",
+    "settler_limits": [
+        200,
+        300,
+        600,
+        1000,
+        1500,
+        1500
+    ],
+    "road_speed_modifier": 1.6,
+    "storehouse_capacities": [
+        1000,
+        2500,
+        5000,
+        10000
+    ],
+    "storehouse_max_amount_on_stock": 500,
+    "storehouse_upgrade_gold": [
+        100,
+        200,
+        300
+    ],
+    "storehouse_upgrade_stone": [
+        10,
+        20,
+        30
+    ],
+    "storehouse_upgrade_seconds": [
+        10,
+        20,
+        30
+    ],
+    "storehouse_upgrade_settlers": [
+        5,
+        10,
+        20
+    ],
+    "castle_soldier_limits": [
+        50,
+        100,
+        150,
+        250
+    ],
+    "castle_treasury_capacities": [
+        99000,
+        99000,
+        99000,
+        99000
+    ],
+    "castle_hitpoints": [
+        2000,
+        4000,
+        7000,
+        10000
+    ],
+    "castle_upgrade_gold": [
+        100,
+        200,
+        300
+    ],
+    "castle_upgrade_stone": [
+        10,
+        20,
+        30
+    ],
+    "castle_upgrade_seconds": [
+        10,
+        20,
+        30
+    ],
+    "castle_upgrade_settlers": [
+        5,
+        10,
+        20
+    ],
+    "cathedral_sermon_limits": [
+        30,
+        60,
+        120,
+        250
+    ],
+    "cathedral_prestige_points": [
+        200,
+        500,
+        1000
+    ],
+    "cathedral_upgrade_gold": [
+        100,
+        200,
+        300
+    ],
+    "cathedral_upgrade_stone": [
+        10,
+        20,
+        30
+    ],
+    "cathedral_upgrade_seconds": [
+        10,
+        20,
+        30
+    ],
+    "mine_stone_capacity": 999999,
+    "mine_iron_capacity": 999999,
+    "well_water_refill_rate": 3.0,
+    "well_water_capacity": [
+        100,
+        200,
+        300,
+        400
+    ],
+    "cart_speed": 480,
+    "workshop_output_capacity": 30,
+    "battalion_size": 12,
+    "wall_gate_health": 6000,
+    "wall_turret_health": 5000,
+    "wall_segment_health": 4000,
+    "soldier_speed": 600,
+    "soldier_health": 200
+}

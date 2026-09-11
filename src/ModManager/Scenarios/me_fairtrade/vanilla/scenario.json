@@ -1,0 +1,14 @@
+{
+    "id": "vanilla",
+    "map_id": "me_fairtrade",
+    "title": "Original: Fairer Handel (Vanilla)",
+    "author": "Ubisoft / Blue Byte",
+    "version": "1.71",
+    "is_vanilla": true,
+    "description": "Das originale, unberührte Kampagnenszenario. Friedlicher Handel mit Metaria, standardmäßige KI und normale Siedlungsbedingungen.",
+    "features": [
+        "Originale Questkette",
+        "Standard-Diplomatie und Handelswege",
+        "Keine Mod-Dateien im ModLoader erforderlich"
+    ]
+}

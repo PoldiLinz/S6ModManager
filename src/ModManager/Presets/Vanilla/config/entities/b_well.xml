@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+    <Display classname="ED::CBuildingProps">
+        <Class>ED::CDisplayBuilding</Class>
+        <Model>XD_Fountain</Model>
+        <Anim></Anim>
+    </Display>
+
+    <Logic classname="EGL::CBuildingProps">
+        <Class>EGL::CBuilding</Class>
+
+        <Cost>
+            <GoodAmount>
+                <GoodType>G_Stone</GoodType>
+                <Amount>10</Amount>
+            </GoodAmount>
+            <!--GoodAmount>
+                <GoodType>G_Wood</GoodType>
+                <Amount>5</Amount>
+            </GoodAmount-->
+        </Cost>
+
+
+        <ProducedGood>
+            <GoodType>G_Water</GoodType>
+            <Amount>0</Amount>
+        </ProducedGood>
+        <OutStockCapacities>
+            <OutStockCapacity>25</OutStockCapacity>
+            <OutStockCapacity>50</OutStockCapacity>
+            <OutStockCapacity>75</OutStockCapacity>
+            <OutStockCapacity>100</OutStockCapacity>
+        </OutStockCapacities>
+
+        <WellApproachDistances>
+            <WellApproachDistance>140</WellApproachDistance>
+            <WellApproachDistance>175</WellApproachDistance>
+            <WellApproachDistance>205</WellApproachDistance>
+            <WellApproachDistance>225</WellApproachDistance>
+        </WellApproachDistances>
+
+        <MaxNumberOfUpgrades>3</MaxNumberOfUpgrades>
+        <SecondsToUpgrade>0</SecondsToUpgrade>
+
+        <ConstructionCost></ConstructionCost>
+        <CanBeBuildOnOuterRim>false</CanBeBuildOnOuterRim>
+        <FlattenOnBuild>true</FlattenOnBuild>
+	<IsHeightLocking>true</IsHeightLocking>
+	<MayRemoveEntities>true</MayRemoveEntities>
+        <AccessCategory>AccessCategoryBuilding</AccessCategory>
+        <NeedsPlayer>true</NeedsPlayer>
+        <ForceNoPlayer>false</ForceNoPlayer>
+        <MaxHealth>6000</MaxHealth>
+        <CanLeaveImmediately>true</CanLeaveImmediately>
+        <EntityCategories>
+            <EntityCategory>G_Water_Supplier</EntityCategory>
+            <EntityCategory>NonTorchable</EntityCategory>
+        </EntityCategories>
+        <RepairBuildingTL>TL_WORKER_REPAIR</RepairBuildingTL>
+        <ApproachPos>
+            <X>0</X>
+            <Y>0</Y>
+        </ApproachPos>
+        <ApproachR>180</ApproachR>
+        <DoorPos>
+            <X>0</X>
+            <Y>0</Y>
+        </DoorPos>
+        <BlockingAreas>
+        </BlockingAreas>
+        <BuildBlockingAreas>
+            <BuildBlockingArea>
+                <Blocked1>
+                    <X>200</X>
+                    <Y>-250</Y>
+                </Blocked1>
+                <Blocked2>
+                    <X>-200</X>
+                    <Y>250</Y>
+                </Blocked2>
+            </BuildBlockingArea>
+        </BuildBlockingAreas>
+        <Exploration>0</Exploration>
+    </Logic>
+    <Behaviors>
+        <Behavior>
+            <Logic classname="EGL::CStockBehaviorProps">
+                <Class>EGL::CStockOutBehavior</Class>
+                <MaxAmountOnStock>25</MaxAmountOnStock>
+                <GoodTypes>
+                    <GoodType>G_Water</GoodType>
+                </GoodTypes>
+            </Logic>
+        </Behavior>
+        <Behavior>
+            <Logic classname="EGL::CWellBehaviorProps">
+                <Class>EGL::CWellBehavior</Class>
+                <WaterRefillRatePerSecond>0.5</WaterRefillRatePerSecond>
+                <AddRateRain>.2</AddRateRain>
+                <WaterType>G_Water</WaterType>
+                <WarnIfWaterLow>true</WarnIfWaterLow>
+            </Logic>
+        </Behavior>
+
+       
+    </Behaviors>
+	<MapEditor>
+		<TreePosition>buildings\city</TreePosition>
+		<ShowInTree>false</ShowInTree>
+		<Clime>Generic</Clime>
+		<Scalable>false</Scalable>
+		<TemplateResistant>true</TemplateResistant>
+	</MapEditor>
+</root>

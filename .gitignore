@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller / Build Artifacts
+build/
+dist/
+*.spec
+
+# User and Runtime Data (Keeps repo 100% legal & clean)
+settings.json
+*.log
+launcher_debug.log
+install_debug.log
+mod_manager.log
+S6Patcher.log
+Backups/
+"Original Game Files/"
+"Original Mod Files/"
+temp_unpack/
+temp_unpack_test/
+processing/
+scratch/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk

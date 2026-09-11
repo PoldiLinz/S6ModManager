@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<root>
+  <Display classname="ED::CEntityProps">
+    <Class>ED::CDisplaySettler</Class>
+    <DrawPlayerColor>True</DrawPlayerColor>
+    
+        <Anims>
+        </Anims>
+  </Display>
+  
+  <Logic classname="EGL::CSettlerProps">
+    <Class>EGL::CSettler</Class>
+    <AccessCategory>AccessCategorySettler</AccessCategory>
+    <MaxHealth> 200 </MaxHealth>
+    <NeedsPlayer>true</NeedsPlayer>
+    <ForceNoPlayer>false</ForceNoPlayer>
+    <ShowInMiniMap>1</ShowInMiniMap>
+
+    <AdjustWalkAnimSpeed>true</AdjustWalkAnimSpeed>
+    <RepairFactor>0.3</RepairFactor>
+    <Exploration>24</Exploration>
+    <IdleTaskList>TL_CUTSCENE</IdleTaskList>
+  </Logic>
+  
+  <Behaviors>
+
+    <Behavior>
+      <Logic classname="EGL::CAnimationBehaviorExProps">
+        <Class>EGL::CBehaviorAnimationEx</Class>
+        <!-- SuspensionAnimation and AnimSet -->
+                <AnimSet>SET_HUNTER_WORKER_CART</AnimSet>
+
+      </Logic>
+      <Display classname="ED::CBehaviorProps">
+        <Class>ED::CDisplayBehaviorAnimation</Class>
+      </Display>
+    </Behavior>
+
+    <Behavior>
+      <Logic classname="EGL::CBehaviorDefaultMovementProps">
+        <Class>EGL::CSettlerMovement</Class>
+        <Speed>320</Speed>
+        <RotationSpeed>30</RotationSpeed>
+        <MoveTaskList>TL_NPC_WALK</MoveTaskList>
+        <MoveIdleAnim/>
+      </Logic>
+      <Display classname="ED::CBehaviorProps">
+        <Class>ED::CDisplayBehaviorMovement</Class>
+      </Display>
+    </Behavior>
+
+    <Behavior>
+      <Logic classname="EGL::CBehaviorProps">
+        <Class>EGL::CBehaviorWalkCommand</Class>
+      </Logic>
+    </Behavior>
+        
+  </Behaviors>
+  
+  <MapEditor>
+    <TreePosition></TreePosition>
+    <ShowInTree>false</ShowInTree>
+    <Clime>Generic</Clime>
+    <Scalable>false</Scalable>
+  </MapEditor>
+</root>

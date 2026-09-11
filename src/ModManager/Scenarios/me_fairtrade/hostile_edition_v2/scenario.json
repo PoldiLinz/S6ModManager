@@ -1,0 +1,17 @@
+{
+    "id": "hostile_edition_v2",
+    "map_id": "me_fairtrade",
+    "title": "Feindseliger Freihandel v2.0",
+    "author": "Siedler 6 Mod Team",
+    "version": "2.0",
+    "is_vanilla": false,
+    "description": "Erweiterte Herausforderung: 45 Minuten Schonfrist, feindliche Nachbarstädte mit koordinierten Angriffswellen und stetige Ressourcenlieferungen.",
+    "features": [
+        "45 Minuten friedliche Aufbau-Schonfrist",
+        "Automatische Ressourcenlieferung (30 Eisen & 20 Stein alle 10 Minuten)",
+        "Feindliche Städte Plenham (P2) & Windchill (P3) mit Katapulten & Belagerung",
+        "Neutrales Kloster Metaria (P5) als essenzieller Handelspartner",
+        "Duale Siegbedingung: Kloster-Handelskette ODER Zerstörung der Burgen",
+        "Dynamische Banditenüberfälle (Gefixed)"
+    ]
+}
