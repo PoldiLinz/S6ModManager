@@ -25,7 +25,7 @@ Provides live game configuration (population limits, warehouses, castles, mines)
 | Feature | Interface Preview | Details |
 |---|---|---|
 | **Live Configurations & Limits** | <img src="docs/images/tab_config.png" width="400"> | Dynamic population caps (up to 5,000+ settlers), customized warehouse capacities, upgrade cost balance matrices, and infinite mines. |
-| **Maps & Scenario Variations** | <img src="docs/images/tab_scenarios.png" width="400"> | Switch seamlessly between Ubisoft vanilla maps and modded scenario editions (such as *Hostile Fair Trade*) with a single click. |
+| **Maps & Scenario Variations** | <img src="docs/images/tab_scenarios.png" width="400"> | Switch seamlessly between original vanilla maps and customized community scenario editions with a single click. |
 | **Sandbox & Test Injector** | <img src="docs/images/tab_sandbox.png" width="400"> | Test setups with instant Duke rank, 50,000 gold starter funds, filled storehouses, and complete fog-of-war reveal. |
 | **System Health & S6Patcher Guard** | <img src="docs/images/tab_system.png" width="400"> | Live ModLoader file monitor, protected core files check, UAC status indicator, and instant 1-click ZIP snapshot backups. |
 | **Settings & Bilingual Support** | <img src="docs/images/dialog_settings.png" width="400"> | On-the-fly English/German language toggle and automatic game & document path autodetection. |
@@ -43,8 +43,8 @@ Provides live game configuration (population limits, warehouses, castles, mines)
 
 ### 2. 🗺️ Maps & Scenario Variants Manager
 * **Map Library:** Direct overview of supported single-player and campaign maps.
-* **Variants & Sub-Scenarios:** Manage multiple modifications for the same map (e.g., *Vanilla* vs. *Hostile Fair Trade* with aggressive raid waves and grace period).
-* **UserMap Import:** 1-click assignment of custom maps from `UserMaps` as replacements or variants of an original map.
+* **Variants & Sub-Scenarios:** Manage multiple modifications for the same map (e.g., *Vanilla* vs. custom balance editions or challenge modes).
+* **UserMap Import:** 1-click assignment of custom maps from `UserMaps` as replacements or variants of an existing map.
 * **Non-Destructive:** Restoring vanilla only removes ModLoader overrides, keeping original game archives untouched.
 
 ### 3. 🧪 Test Map & Sandbox Injector (High-Tier Testing)
@@ -114,9 +114,9 @@ Using modern AI coding assistants (such as Antigravity, Gemini, ChatGPT, or Clau
 ### The 4-Step Scenario Workflow:
 
 #### 1. Choose a Base Map & Create Variant Directory
-In your ModManager installation, navigate to `src/ModManager/Scenarios/` (or your local workspace) and choose an existing map ID (e.g. `me_fairtrade`):
+In your ModManager installation, navigate to `src/ModManager/Scenarios/` (or your local workspace) and choose an existing map ID (e.g. `example_map`):
 ```text
-Scenarios/me_fairtrade/
+Scenarios/example_map/
 ├── vanilla/
 │   └── scenario.json
 └── my_ai_survival/
@@ -125,7 +125,7 @@ Scenarios/me_fairtrade/
     │   ├── mapscript.lua      # Your AI-generated game logic
     │   └── info.xml           # Map info & display name
     └── text/de/maps/          # Optional: localized mission briefing
-        └── map_me_fairtrade.xml
+        └── map_example_map.xml
 ```
 
 #### 2. Define `scenario.json`

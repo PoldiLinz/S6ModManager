@@ -25,7 +25,7 @@ Ermöglicht Live-Konfigurationen des Spiels (Siedlerlimit, Lager, Burgen, Minen)
 | Bereich | Vorschau | Beschreibung |
 |---|---|---|
 | **Live-Konfiguration & Limits** | <img src="docs/images/tab_config.png" width="400"> | Dynamische Siedlerlimits (bis 5.000+ Siedler), anpassbare Lagerkapazitäten, Ausbau-Kostenmatrizen und unerschöpfliche Minen. |
-| **Karten & Szenario-Varianten** | <img src="docs/images/tab_scenarios.png" width="400"> | Nahtloses Umschalten zwischen Original-Ubisoft-Karten und Community-Varianten (z. B. *Feindseliger Freihandel*) mit 1 Klick. |
+| **Karten & Szenario-Varianten** | <img src="docs/images/tab_scenarios.png" width="400"> | Nahtloses Umschalten zwischen vorhandenen Karten und benutzerdefinierten Community-Varianten mit 1 Klick. |
 | **Sandbox & Test-Injektor** | <img src="docs/images/tab_sandbox.png" width="400"> | Test-Setups mit sofortigem Herzog-Rang, 50.000 Startgold, gefüllten Lagern und vollständiger Kartenaufdeckung (Fog of War Reveal). |
 | **System-Status & S6Patcher-Schutz** | <img src="docs/images/tab_system.png" width="400"> | Live-Dateimonitor für den ModLoader, Schutz unverzichtbarer Dateien, UAC-Statusanzeige und 1-Klick-ZIP-Snapshots/Backups. |
 | **Einstellungen & Zweisprachigkeit** | <img src="docs/images/dialog_settings.png" width="400"> | Sofortige Sprachumschaltung (Deutsch / Englisch) und automatische Pfaderkennung für Spiel-, Modloader- und Dokumentenordner. |
@@ -43,7 +43,7 @@ Ermöglicht Live-Konfigurationen des Spiels (Siedlerlimit, Lager, Burgen, Minen)
 
 ### 2. 🗺️ Karten & Szenario-Varianten-Manager
 * **Karten-Bibliothek:** Übersicht über unterstützte Einzelspieler- und Kampagnenkarten.
-* **Abwandlungen & Varianten:** Verwalte mehrere Modifikationen derselben Karte (z. B. *Vanilla* vs. *Feindseliger Freihandel* mit Angriffswellen und Schonfrist).
+* **Abwandlungen & Varianten:** Verwalte mehrere Modifikationen derselben Karte (z. B. *Vanilla* vs. individuelle Balancing- oder Herausforderungs-Editionen).
 * **UserMap-Import:** 1-Klick-Zuweisung selbsterstellter Karten aus `UserMaps` als Ersatz oder Variante einer Originalkarte.
 * **Non-Destruktiv:** Das Zurücksetzen auf Vanilla entfernt lediglich die ModLoader-Overrides, sodass die Original-Dateien des Spiels unberührt bleiben.
 
@@ -113,9 +113,9 @@ Mit modernen KI-Assistenten (wie Antigravity, Gemini, ChatGPT oder Claude) kanns
 ### Der 4-Schritte-Workflow für Szenarien:
 
 #### 1. Basiskarte wählen & Varianten-Ordner anlegen
-Navigiere in deiner ModManager-Installation zu `src/ModManager/Scenarios/` (oder in deinen Workspace) und wähle eine Karten-ID (z. B. `me_fairtrade` für *Fairer Handel*):
+Navigiere in deiner ModManager-Installation zu `src/ModManager/Scenarios/` (oder in deinen Workspace) und wähle eine Karten-ID (z. B. `beispiel_karte`):
 ```text
-Scenarios/me_fairtrade/
+Scenarios/beispiel_karte/
 ├── vanilla/
 │   └── scenario.json
 └── meine_ki_survival_mod/
@@ -124,7 +124,7 @@ Scenarios/me_fairtrade/
     │   ├── mapscript.lua      # Deine KI-generierte Spiellogik
     │   └── info.xml           # Karten-Infos & Anzeigename
     └── text/de/maps/          # Optional: Eigene deutsche Missionsbeschreibung
-        └── map_me_fairtrade.xml
+        └── map_beispiel_karte.xml
 ```
 
 #### 2. Metadaten in `scenario.json` anlegen
