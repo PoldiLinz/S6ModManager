@@ -67,9 +67,10 @@ Bevor du den ModManager installierst und startest, stelle sicher, dass dein Spie
    * Stelle sicher, dass sowohl das Basisspiel als auch das Add-on (*Reich des Ostens* / *Eastern Realm*) auf dem neuesten offiziellen Stand sind (z. B. Patch 1.7.1 für das Basisspiel / Patch 2.1 für Reich des Ostens).
 2. **Das Spiel einmalig starten:**
    * Starte *Die Siedler 6* mindestens einmal bis ins Hauptmenü, bevor du Mods installierst. Dadurch werden alle benötigten Benutzerordner (`Dokumente\DIE SIEDLER...`), Konfigurationsdateien und Windows-Registry-Einträge sauber initialisiert.
-3. **Siedler 6 ModLoader (S6Patcher) ausführen & aktivieren:**
-   * Starte den offiziellen **S6Patcher** (Siedler 6 ModLoader).
-   * Führe das Patchen des Spiels durch und **aktiviere die Mods** (hierdurch wird die `modloader\`-Ordnerstruktur im Spielverzeichnis angelegt).
+3. **Siedler 6 ModLoader (S6Patcher) herunterladen & aktivieren:**
+   * Der S6Patcher ist das fundamentale Fundament, das Modding für Die Siedler 6 überhaupt erst ermöglicht:
+     🔗 **[S6Patcher Download & Community-Hub auf Siedler-Games.de](https://siedler-games.de/)**
+   * Starte den S6Patcher, führe das Patchen des Spiels durch und klicke auf **Mods aktivieren** (hierdurch wird der `modloader\`-Ordner im Spielverzeichnis angelegt).
 4. **Bereit für den ModManager:**
    * Sobald der ModLoader aktiv ist, kannst du mit der Einrichtung des ModManagers wie folgt fortfahren.
 

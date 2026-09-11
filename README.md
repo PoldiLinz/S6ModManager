@@ -67,9 +67,10 @@ Before setting up and running the ModManager, make sure your game is updated and
    * Ensure your base game and the expansion (*The Settlers: Eastern Realm*) are updated to their latest official patches (e.g. Patch 1.7.1 for the base game / Patch 2.1 for the expansion).
 2. **Launch the Game Once:**
    * Run *The Settlers 6* at least once to the main menu before installing any mods. This initializes the user documents directory (`Documents\THE SETTLERS - Rise of an Empire` or `Documents\DIE SIEDLER...`), local configuration, and registry paths.
-3. **Run the Settlers 6 Modloader (S6Patcher):**
-   * Run the official **S6Patcher** (Settlers 6 ModLoader).
-   * Patch the game binaries and **activate mods** (this creates the `modloader\` directory in your game directory).
+3. **Download & Run the Settlers 6 ModLoader (S6Patcher):**
+   * The S6Patcher is the foundational modloader that enables runtime game modifications:
+     🔗 **[Download S6Patcher on Siedler-Games.de](https://siedler-games.de/)**
+   * Run the S6Patcher, patch the game binaries, and click **Activate Mods** (this creates the `modloader\` directory in your game installation).
 4. **Proceed with ModManager Setup:**
    * Once the ModLoader is present and active, continue with the ModManager setup below.
 
