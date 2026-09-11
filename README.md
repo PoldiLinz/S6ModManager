@@ -14,6 +14,22 @@
 A modern, standalone desktop manager built with **PyQt6** for *The Settlers: Rise of an Empire* (Die Siedler: Aufstieg eines Königreichs).  
 Provides live game configuration (population limits, warehouses, castles, mines), scenario and map switching with multiple variants, and a high-tier sandbox injector for rapid development and testing.
 
+<p align="center">
+  <img src="docs/images/tab_config.png" alt="The Settlers 6 ModManager Interface" width="880">
+</p>
+
+---
+
+## 📸 Visual Showcase & Interface Tour
+
+| Feature | Interface Preview | Details |
+|---|---|---|
+| **Live Configurations & Limits** | <img src="docs/images/tab_config.png" width="400"> | Dynamic population caps (up to 5,000+ settlers), customized warehouse capacities, upgrade cost balance matrices, and infinite mines. |
+| **Maps & Scenario Variations** | <img src="docs/images/tab_scenarios.png" width="400"> | Switch seamlessly between Ubisoft vanilla maps and modded scenario editions (such as *Hostile Fair Trade*) with a single click. |
+| **Sandbox & Test Injector** | <img src="docs/images/tab_sandbox.png" width="400"> | Test setups with instant Duke rank, 50,000 gold starter funds, filled storehouses, and complete fog-of-war reveal. |
+| **System Health & S6Patcher Guard** | <img src="docs/images/tab_system.png" width="400"> | Live ModLoader file monitor, protected core files check, UAC status indicator, and instant 1-click ZIP snapshot backups. |
+| **Settings & Bilingual Support** | <img src="docs/images/dialog_settings.png" width="400"> | On-the-fly English/German language toggle and automatic game & document path autodetection. |
+
 ---
 
 ## ✨ Key Features

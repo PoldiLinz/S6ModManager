@@ -14,6 +14,22 @@
 Ein moderner, eigenständiger Desktop-Manager mit **PyQt6** für *Die Siedler: Aufstieg eines Königreichs* (The Settlers - Rise of an Empire).  
 Ermöglicht Live-Konfigurationen des Spiels (Siedlerlimit, Lager, Burgen, Minen), Szenario- und Map-Switching mit mehreren Abwandlungen sowie eine High-Tier-Sandbox für schnelles Entwickeln und Testen.
 
+<p align="center">
+  <img src="docs/images/tab_config.png" alt="Die Siedler 6 ModManager Benutzeroberfläche" width="880">
+</p>
+
+---
+
+## 📸 Visuelle Übersicht & Screenshots
+
+| Bereich | Vorschau | Beschreibung |
+|---|---|---|
+| **Live-Konfiguration & Limits** | <img src="docs/images/tab_config.png" width="400"> | Dynamische Siedlerlimits (bis 5.000+ Siedler), anpassbare Lagerkapazitäten, Ausbau-Kostenmatrizen und unerschöpfliche Minen. |
+| **Karten & Szenario-Varianten** | <img src="docs/images/tab_scenarios.png" width="400"> | Nahtloses Umschalten zwischen Original-Ubisoft-Karten und Community-Varianten (z. B. *Feindseliger Freihandel*) mit 1 Klick. |
+| **Sandbox & Test-Injektor** | <img src="docs/images/tab_sandbox.png" width="400"> | Test-Setups mit sofortigem Herzog-Rang, 50.000 Startgold, gefüllten Lagern und vollständiger Kartenaufdeckung (Fog of War Reveal). |
+| **System-Status & S6Patcher-Schutz** | <img src="docs/images/tab_system.png" width="400"> | Live-Dateimonitor für den ModLoader, Schutz unverzichtbarer Dateien, UAC-Statusanzeige und 1-Klick-ZIP-Snapshots/Backups. |
+| **Einstellungen & Zweisprachigkeit** | <img src="docs/images/dialog_settings.png" width="400"> | Sofortige Sprachumschaltung (Deutsch / Englisch) und automatische Pfaderkennung für Spiel-, Modloader- und Dokumentenordner. |
+
 ---
 
 ## ✨ Hauptfunktionen
