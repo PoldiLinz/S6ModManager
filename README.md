@@ -69,7 +69,7 @@ Before setting up and running the ModManager, make sure your game is updated and
    * Run *The Settlers 6* at least once to the main menu before installing any mods. This initializes the user documents directory (`Documents\THE SETTLERS - Rise of an Empire` or `Documents\DIE SIEDLER...`), local configuration, and registry paths.
 3. **Download & Run the Settlers 6 ModLoader (S6Patcher):**
    * The S6Patcher is the foundational modloader that enables runtime game modifications:
-     🔗 **[Download S6Patcher on Siedler-Games.de](https://siedler-games.de/)**
+     🔗 **[Download S6Patcher on GitHub (by Eisenmonoxid)](https://github.com/Eisenmonoxid/S6Patcher/)**
    * Run the S6Patcher, patch the game binaries, and click **Activate Mods** (this creates the `modloader\` directory in your game installation).
 4. **Proceed with ModManager Setup:**
    * Once the ModLoader is present and active, continue with the ModManager setup below.

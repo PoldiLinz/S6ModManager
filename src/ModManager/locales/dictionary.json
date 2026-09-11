@@ -385,7 +385,7 @@
     },
     "modloader": {
       "warning_title": "ModLoader Information",
-      "warning_msg": "The folder for the ModLoader was not found or the game has not yet been patched with the ModLoader.<br><br>The game must be patched with the ModLoader first for mods to work in-game.<br><br>A link to the ModLoader is available at:<br><a href='https://siedler-games.de/'>https://siedler-games.de/</a><br><br>The ModLoader directory has been automatically created so the ModManager can work independently."
+      "warning_msg": "The folder for the ModLoader was not found or the game has not yet been patched with the ModLoader.<br><br>The game must be patched with the ModLoader first for mods to work in-game.<br><br>A link to the ModLoader is available at:<br><a href='https://github.com/Eisenmonoxid/S6Patcher/'>https://github.com/Eisenmonoxid/S6Patcher/</a><br><br>The ModLoader directory has been automatically created so the ModManager can work independently."
     },
     "launcher": {
       "dialog_title": "Settlers 6 ModManager • Launch Assistant",
@@ -800,7 +800,7 @@
     },
     "modloader": {
       "warning_title": "ModLoader Hinweis",
-      "warning_msg": "Der Ordner für den ModLoader wurde scheinbar nicht angelegt bzw. das Spiel wurde noch nicht mit dem ModLoader gepatched.<br><br>Das Spiel muss zuerst mit dem ModLoader gepatched werden, damit Mods im Spiel funktionieren.<br><br>Ein Link zum ModLoader befindet sich unter:<br><a href='https://siedler-games.de/'>https://siedler-games.de/</a><br><br>Der ModLoader-Ordner wurde automatisch angelegt, damit der ModManager unabhängig arbeiten kann."
+      "warning_msg": "Der Ordner für den ModLoader wurde scheinbar nicht angelegt bzw. das Spiel wurde noch nicht mit dem ModLoader gepatched.<br><br>Das Spiel muss zuerst mit dem ModLoader gepatched werden, damit Mods im Spiel funktionieren.<br><br>Ein Link zum ModLoader befindet sich unter:<br><a href='https://github.com/Eisenmonoxid/S6Patcher/'>https://github.com/Eisenmonoxid/S6Patcher/</a><br><br>Der ModLoader-Ordner wurde automatisch angelegt, damit der ModManager unabhängig arbeiten kann."
     },
     "launcher": {
       "dialog_title": "Siedler 6 ModManager • Start-Assistent",

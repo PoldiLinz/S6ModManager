@@ -69,7 +69,7 @@ Bevor du den ModManager installierst und startest, stelle sicher, dass dein Spie
    * Starte *Die Siedler 6* mindestens einmal bis ins Hauptmenü, bevor du Mods installierst. Dadurch werden alle benötigten Benutzerordner (`Dokumente\DIE SIEDLER...`), Konfigurationsdateien und Windows-Registry-Einträge sauber initialisiert.
 3. **Siedler 6 ModLoader (S6Patcher) herunterladen & aktivieren:**
    * Der S6Patcher ist das fundamentale Fundament, das Modding für Die Siedler 6 überhaupt erst ermöglicht:
-     🔗 **[S6Patcher Download & Community-Hub auf Siedler-Games.de](https://siedler-games.de/)**
+     🔗 **[S6Patcher auf GitHub herunterladen (von Eisenmonoxid)](https://github.com/Eisenmonoxid/S6Patcher/)**
    * Starte den S6Patcher, führe das Patchen des Spiels durch und klicke auf **Mods aktivieren** (hierdurch wird der `modloader\`-Ordner im Spielverzeichnis angelegt).
 4. **Bereit für den ModManager:**
    * Sobald der ModLoader aktiv ist, kannst du mit der Einrichtung des ModManagers wie folgt fortfahren.
